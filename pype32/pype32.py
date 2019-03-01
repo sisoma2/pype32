@@ -189,7 +189,7 @@ class PE(object):
 
         @type pathToFile: str
         @param pathToFile: Path to the file.
-        
+
         @rtype: str
         @return: The data from file.
         """
@@ -382,7 +382,7 @@ class PE(object):
         @return: An index, starting at 0, that represents the section the given offset belongs to.
         """
         index = -1
-        for i in range(len(self.sectionHeaders)):
+        for i in xrange(len(self.sectionHeaders)):
             if (offset < self.sectionHeaders[i].pointerToRawData.value + self.sectionHeaders[i].sizeOfRawData.value):
                 index = i
                 break
@@ -401,7 +401,7 @@ class PE(object):
         index = -1
 
         if name:
-            for i in range(len(self.sectionHeaders)):
+            for i in xrange(len(self.sectionHeaders)):
                 if self.sectionHeaders[i].name.value.find(name) >= 0:
                     index = i
                     break
@@ -422,7 +422,7 @@ class PE(object):
         if rva < self.sectionHeaders[0].virtualAddress.value:
             return index
 
-        for i in range(len(self.sectionHeaders)):
+        for i in xrange(len(self.sectionHeaders)):
             fa = self.ntHeaders.optionalHeader.fileAlignment.value
             prd = self.sectionHeaders[i].pointerToRawData.value
             srd = self.sectionHeaders[i].sizeOfRawData.value
@@ -1030,7 +1030,7 @@ class PE(object):
         boundImportDirectory = directories.ImageBoundImportDescriptor.parse(rd)
 
         # parse the name of every bounded import.
-        for i in range(len(boundImportDirectory) - 1):
+        for i in xrange(len(boundImportDirectory) - 1):
             if hasattr(boundImportDirectory[i],  "forwarderRefsList"):
                 if boundImportDirectory[i].forwarderRefsList:
                     for forwarderRefEntry in boundImportDirectory[i].forwarderRefsList:
@@ -1278,7 +1278,7 @@ class PE(object):
         else:
             raise InvalidParameterException("magic value %d is not PE64 nor PE32." % magic)
 
-        for i in range(iidLength -1):
+        for i in xrange(iidLength -1):
             if iid[i].originalFirstThunk.value != 0:
                 iltRva = iid[i].originalFirstThunk.value
                 iatRva = iid[i].firstThunk.value
@@ -1403,7 +1403,7 @@ class PE(object):
         numberOfStreams = netDirectoryClass.netMetaDataHeader.numberOfStreams.value
         netDirectoryClass.netMetaDataStreams = directories.NetMetaDataStreams.parse(rd, numberOfStreams)
 
-        for i in range(numberOfStreams):
+        for i in xrange(numberOfStreams):
             stream = netDirectoryClass.netMetaDataStreams[i]
             name = stream.name.value
             rd.setOffset(stream.offset.value)
@@ -1428,7 +1428,7 @@ class PE(object):
                     offset = rd2.tell()
                     stream.info.append({ offset: rd2.readDotNetBlob() })
 
-        for i in range(numberOfStreams):
+        for i in xrange(numberOfStreams):
             stream = netDirectoryClass.netMetaDataStreams[i]
             name = stream.name.value
             if name in ("#~", "#-"):
@@ -1642,14 +1642,14 @@ class DosHeader(baseclasses.BaseStructClass):
         dosHdr.e_ovno.value  = readDataInstance.readWord()
 
         dosHdr.e_res = datatypes.Array(datatypes.TYPE_WORD)
-        for i in range(4):
+        for i in xrange(4):
             dosHdr.e_res.append(datatypes.WORD(readDataInstance.readWord()))
 
         dosHdr.e_oemid.value  = readDataInstance.readWord()
         dosHdr.e_oeminfo.value  = readDataInstance.readWord()
 
         dosHdr.e_res2 = datatypes.Array(datatypes.TYPE_WORD)
-        for i in range (10):
+        for i in xrange (10):
             dosHdr.e_res2.append(datatypes.WORD(readDataInstance.readWord()))
 
         dosHdr.e_lfanew.value = readDataInstance.readDword()
@@ -2058,7 +2058,7 @@ class SectionHeaders(list):
         self.shouldPack = shouldPack
 
         if numberOfSectionHeaders:
-            for i in range(numberOfSectionHeaders):
+            for i in xrange(numberOfSectionHeaders):
                 sh = SectionHeader()
                 self.append(sh)
 
@@ -2078,7 +2078,7 @@ class SectionHeaders(list):
         """
         sHdrs = SectionHeaders(numberOfSectionHeaders = 0)
 
-        for i in range(numberOfSectionHeaders):
+        for i in xrange(numberOfSectionHeaders):
             sh = SectionHeader()
 
             sh.name.value = readDataInstance.read(8)

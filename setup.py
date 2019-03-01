@@ -94,7 +94,7 @@ metadata = {
     'long_description'  : long_description,
     'author'            : 'Nahuel Riva',
     'author_email'      : 'crackinglandia'+chr(64)+'gmail'+chr(0x2e)+'com',
-    'url'               : 'https://github.com/crackinglandia/pype32', 
+    'url'               : 'https://github.com/crackinglandia/pype32',
     'keywords'          : ['pecoff', 'x86', 'x64', '.net', 'parser'],
     'download_url'      : 'https://github.com/crackinglandia/pype32/tarball/v0.1-alpha5',
     }
