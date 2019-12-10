@@ -38,16 +38,16 @@ Auxiliary classes and functions.
 __revision__ = "$Id$"
 
 __all__ = [
-           "ReadData",
-           "WriteData",
-           ]
+    "ReadData",
+    "WriteData",
+]
 
 import excep
 
-from cStringIO import StringIO as cstringio
 from StringIO import StringIO
 from struct import pack, unpack
 import uuid
+
 
 def powerOfTwo(value):
     """
@@ -61,6 +61,7 @@ def powerOfTwo(value):
         C{False} if it doesn't.
     """
     return value != 0 and (value & (value - 1)) == 0
+
 
 def allZero(buffer):
     """
@@ -80,9 +81,10 @@ def allZero(buffer):
             break
     return allZero
 
+
 class WriteData(object):
     """Return a WriteData-like stream object for writing."""
-    def __init__(self, data, endianness = "<", signed = False):
+    def __init__(self, data, endianness="<", signed=False):
         """
         @type data: str
         @param data: Data to create the L{WriteData} object.
@@ -137,7 +139,7 @@ class WriteData(object):
         @type qword: int
         @param qword: Qword value to write into the stream.
         """
-        self.data.write(pack(self.endianness + ("Q" if not self.signed else "q"),  qword))
+        self.data.write(pack(self.endianness + ("Q" if not self.signed else "q"), qword))
 
     def write(self, dataToWrite):
         """
@@ -183,9 +185,10 @@ class WriteData(object):
         self.data.close()
         del self.data
 
+
 class ReadData(object):
     """Returns a ReadData-like stream object."""
-    def __init__(self, data, endianness = "<",  signed = False):
+    def __init__(self, data, endianness="<", signed=False):
         """
         @type data: str
         @param data: The data from which we want to read.
@@ -213,7 +216,7 @@ class ReadData(object):
         @rtype: int
         @return: The dword value read from the L{ReadData} stream.
         """
-        dword = unpack(self.endianness + ('L' if not self.signed else 'l'), self.readAt(self.offset,  4))[0]
+        dword = unpack(self.endianness + ('L' if not self.signed else 'l'), self.readAt(self.offset, 4))[0]
         self.offset += 4
         return dword
 
@@ -246,7 +249,7 @@ class ReadData(object):
         @rtype: int
         @return: The qword value read from the L{ReadData} stream.
         """
-        qword = unpack(self.endianness + ('Q' if not self.signed else 'b'),  self.readAt(self.offset, 8))[0]
+        qword = unpack(self.endianness + ('Q' if not self.signed else 'b'), self.readAt(self.offset, 8))[0]
         self.offset += 8
         return qword
 
@@ -263,7 +266,7 @@ class ReadData(object):
             self.offset += 1
         return resultStr
 
-    def readAlignedString(self, align = 4):
+    def readAlignedString(self, align=4):
         """
         Reads an ASCII string aligned to the next align-bytes boundary.
 
@@ -295,7 +298,7 @@ class ReadData(object):
         """
         if nroBytes > self.length - self.offset:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset)
+                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes, self.length - self.offset)
             nroBytes = self.length - self.offset
 
         resultStr = self.data[self.offset:self.offset + nroBytes]
@@ -320,7 +323,7 @@ class ReadData(object):
 
         @raise WrongOffsetValueException: The value is beyond the total length of the data.
         """
-        #if value >= len(self.data):
+        # if value >= len(self.data):
         #    raise excep.WrongOffsetValueException("Wrong offset value. Must be less than %d" % len(self.data))
         self.offset = value
 
@@ -339,7 +342,7 @@ class ReadData(object):
         """
         if offset > self.length:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes,  self.length - self.offset)
+                print "Warning: Trying to read: %d bytes - only %d bytes left" % (size, self.length - self.offset)
             offset = self.length - self.offset
         tmpOff = self.tell()
         self.setOffset(offset)
@@ -358,15 +361,17 @@ class ReadData(object):
 
     def readFields(self, fields):
         result = {}
-        #if not isinstance(fields, (list, tuple)): raise Exception("Invalid field list '{0}'.".format(type(fields).__name__))
-        if not isinstance(fields, (list, tuple)): return result
+        # if not isinstance(fields, (list, tuple)): raise Exception("Invalid field list '{0}'.".format(type(fields).__name__))
+        if not isinstance(fields, (list, tuple)):
+            return result
         for field in fields:
-            if not isinstance(field, dict): raise Exception("Invalid field definition '{0}'.".format(type(field).__name__))
+            if not isinstance(field, dict):
+                raise Exception("Invalid field definition '{0}'.".format(type(field).__name__))
             for k, v in field.iteritems():
-                #print type(v).__name__
+                # print type(v).__name__
                 parsed = v.parse(self)
-                result.update({ k: parsed.value })
-                break # only process the first
+                result.update({k: parsed.value})
+                break  # only process the first
         return result
 
     def read7BitEncodedInteger(self):

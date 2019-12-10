@@ -41,20 +41,19 @@ Data types objects.
 __revision__ = "$Id$"
 
 __all__ = [
-           "String",
-           "AlignedString",
-           "BYTE",
-           "WORD",
-           "DWORD",
-           "QWORD",
-           "Array",
-           ]
+    "String",
+    "AlignedString",
+    "BYTE",
+    "WORD",
+    "DWORD",
+    "QWORD",
+    "Array",
+]
 
-import utils
 import excep
 
 from .baseclasses import DataTypeBaseClass
-from struct import pack, unpack
+from struct import pack
 
 TYPE_QWORD = 0xFECAFECA
 TYPE_DWORD = 0xDEADBEEF
@@ -64,9 +63,10 @@ TYPE_ARRAY = 0xFECA
 UNKNOWN_ARRAY_TYPE = 0xFFFF
 TYPE_STRING_HEAP_INDEX = 0x1000
 
+
 class String(object):
     """String object."""
-    def __init__(self, value = "", shouldPack = True):
+    def __init__(self, value="", shouldPack=True):
         """
         @type value: str
         @param value: the string to be built.
@@ -91,9 +91,10 @@ class String(object):
         """
         return len(self)
 
+
 class AlignedString(String):
     """Aligned string object."""
-    def __init__(self, value, shouldPack = True, align = 4):
+    def __init__(self, value, shouldPack=True, align=4):
         """
         This object represent an aligned ASCII string.
 
@@ -106,15 +107,16 @@ class AlignedString(String):
         @type align: int
         @param align: (Optional) The alignment to be used. The default alignment is 4.
         """
-        String.__init__(self,  value)
+        String.__init__(self, value)
 
         self.align = align
         self.value = value + "\x00" * (self.align - len(value) % self.align)
         self.shouldPack = shouldPack
 
+
 class Array(list):
     """Array object."""
-    def __init__(self, arrayType,  shouldPack = True):
+    def __init__(self, arrayType, shouldPack=True):
         """
         @type arrayType: int
         @param arrayType: The type of array to be built. This value can be C{TYPE_BYTE}, C{TYPE_WORD}, C{TYPE_DWORD} or C{TYPE_QWORD}.
@@ -129,7 +131,7 @@ class Array(list):
         self.arrayType = arrayType
         self.shouldPack = shouldPack
 
-        if not self.arrayType in [TYPE_BYTE,  TYPE_WORD,  TYPE_DWORD,  TYPE_QWORD]:
+        if self.arrayType not in [TYPE_BYTE, TYPE_WORD, TYPE_DWORD, TYPE_QWORD]:
             raise TypeError("Couldn\'t create an Array of type %r" % self.arrayType)
 
     def __str__(self):
@@ -142,7 +144,7 @@ class Array(list):
         return len(self)
 
     @staticmethod
-    def parse(readDataInstance,  arrayType,  arrayLength):
+    def parse(readDataInstance, arrayType, arrayLength):
         """
         Returns a new L{Array} object.
 
@@ -201,13 +203,14 @@ class Array(list):
         """
         return TYPE_ARRAY
 
+
 class BYTE(DataTypeBaseClass):
     """Byte object."""
-    def __init__(self,  value = 0,  endianness = "<",  signed = False,  shouldPack = True):
+    def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
     def __str__(self):
-        return pack(self.endianness  + ("b" if self.signed else "B"),  self.value)
+        return pack(self.endianness + ("b" if self.signed else "B"), self.value)
 
     def __len__(self):
         return len(str(self))
@@ -237,13 +240,14 @@ class BYTE(DataTypeBaseClass):
         """
         return BYTE(readDataInstance.readByte())
 
+
 class WORD(DataTypeBaseClass):
     """Word object."""
-    def __init__(self,  value = 0,  endianness = "<",  signed = False,  shouldPack = True):
+    def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
     def __str__(self):
-        return pack(self.endianness + ("h" if self.signed else "H"),  self.value)
+        return pack(self.endianness + ("h" if self.signed else "H"), self.value)
 
     def __len__(self):
         return len(str(self))
@@ -271,13 +275,14 @@ class WORD(DataTypeBaseClass):
         """
         return WORD(readDataInstance.readWord())
 
+
 class DWORD(DataTypeBaseClass):
     """Dword object."""
-    def __init__(self,  value = 0,  endianness = "<",  signed = False,  shouldPack = True):
+    def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
     def __str__(self):
-        return pack(self.endianness  + ("l" if self.signed else "L"),  self.value)
+        return pack(self.endianness + ("l" if self.signed else "L"), self.value)
 
     def __len__(self):
         return len(str(self))
@@ -303,13 +308,14 @@ class DWORD(DataTypeBaseClass):
         """
         return DWORD(readDataInstance.readDword())
 
+
 class QWORD(DataTypeBaseClass):
     """Qword object."""
-    def __init__(self,  value = 0,  endianness = "<",  signed = False,  shouldPack = True):
+    def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
     def __str__(self):
-        return pack(self.endianness + ("q" if self.signed else "Q"),  self.value)
+        return pack(self.endianness + ("q" if self.signed else "Q"), self.value)
 
     def __len__(self):
         return len(str(self))
