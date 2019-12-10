@@ -53,8 +53,8 @@ __all__ = [
 import utils
 import excep
 
-from baseclasses import DataTypeBaseClass
-from struct import pack,  unpack
+from .baseclasses import DataTypeBaseClass
+from struct import pack, unpack
 
 TYPE_QWORD = 0xFECAFECA
 TYPE_DWORD = 0xDEADBEEF

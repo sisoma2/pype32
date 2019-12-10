@@ -34,9 +34,13 @@ Base classes.
 
 __revision__ = "$Id$"
 
+
 class BaseStructClass(object):
     """ Base class containing methods used by many others classes in the library."""
-    def __init__(self,  shouldPack = True):
+
+    __slots__ = ('shouldPack', '_attrsList')
+
+    def __init__(self, shouldPack=True):
         """
         @type shouldPack: bool
         @param shouldPack: (Optional) If the value is set to C{True}, the class will be packed. If the value is
@@ -48,7 +52,7 @@ class BaseStructClass(object):
     def __str__(self):
         s = ""
         for i in self._attrsList:
-            attr = getattr(self,  i)
+            attr = getattr(self, i)
             if hasattr(attr, "shouldPack") and attr.shouldPack:
                 s += str(attr)
         return s
@@ -72,7 +76,7 @@ class BaseStructClass(object):
         d = {}
         for i in self._attrsList:
             key = i
-            value = getattr(self,  i)
+            value = getattr(self, i)
             d[key] = value
         return d
 
@@ -85,8 +89,12 @@ class BaseStructClass(object):
         """
         raise NotImplementedError("getType() method not implemented.")
 
+
 class DataTypeBaseClass(object):
-    def __init__(self, value = 0, endianness = "<", signed = False, shouldPack = True):
+
+    __slots__ = ('value', 'endianness', 'signed', 'shouldPack')
+
+    def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         """
         @type value: int
         @param value: The value used to build the L{BYTE} object.
@@ -165,7 +173,7 @@ class DataTypeBaseClass(object):
     def __add__(self, other):
         result = None
 
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             try:
                 result = self.value + other.value
             except TypeError, e:
@@ -179,7 +187,7 @@ class DataTypeBaseClass(object):
 
     def __sub__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             try:
                 result = self.value - other.value
             except TypeError, e:
@@ -193,7 +201,7 @@ class DataTypeBaseClass(object):
 
     def __mul__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value * other.value
         else:
             try:
@@ -204,7 +212,7 @@ class DataTypeBaseClass(object):
 
     def __div__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             try:
                 result = self.value / other.value
             except (TypeError, ZeroDivisionError) as e:
@@ -218,7 +226,7 @@ class DataTypeBaseClass(object):
 
     def __xor__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value ^ other.value
         else:
             try:
@@ -229,7 +237,7 @@ class DataTypeBaseClass(object):
 
     def __rshift__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value >> other.value
         else:
             try:
@@ -240,7 +248,7 @@ class DataTypeBaseClass(object):
 
     def __lshift__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value << other.value
         else:
             try:
@@ -251,7 +259,7 @@ class DataTypeBaseClass(object):
 
     def __and__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value & other.value
         else:
             try:
@@ -262,7 +270,7 @@ class DataTypeBaseClass(object):
 
     def __or__(self, other):
         result = None
-        if isinstance(other,  self.__class__):
+        if isinstance(other, self.__class__):
             result = self.value | other.value
         else:
             try:

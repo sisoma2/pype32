@@ -42,6 +42,7 @@ import utils
 import baseclasses
 import dotnet
 
+
 # typedef struct IMAGE_BOUND_FORWARDER_REF
 # {
 #    DWORD   TimeDateStamp;
@@ -50,7 +51,7 @@ import dotnet
 # }
 class ImageBoundForwarderRefEntry(baseclasses.BaseStructClass):
     """ImageBoundForwarderRefEntry object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         This class represents an element of type C{IMAGE_BOUND_FORWARDER_REF}.
         @see: U{http://msdn.microsoft.com/en-us/magazine/cc301808.aspx}
@@ -58,14 +59,14 @@ class ImageBoundForwarderRefEntry(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDateStamp.
-        self.offsetModuleName = datatypes.WORD(0) #: L{WORD} offsetModuleName.
-        self.reserved = datatypes.WORD(0) #: L{WORD} reserved.
-        self.moduleName = datatypes.String(shouldPack = False) #: moduleName is metadata, not part of the structure.
+        self.timeDateStamp = datatypes.DWORD(0)    #: L{DWORD} timeDateStamp.
+        self.offsetModuleName = datatypes.WORD(0)  #: L{WORD} offsetModuleName.
+        self.reserved = datatypes.WORD(0)          #: L{WORD} reserved.
+        self.moduleName = datatypes.String(shouldPack=False)  #: moduleName is metadata, not part of the structure.
 
-        self._attrsList = ["timeDateStamp",  "offsetModuleName",  "reserved",  "moduleName"]
+        self._attrsList = ["timeDateStamp", "offsetModuleName", "reserved", "moduleName"]
 
     def getType(self):
         """Returns L{consts.IMAGE_BOUND_FORWARDER_REF_ENTRY}."""
@@ -88,9 +89,10 @@ class ImageBoundForwarderRefEntry(baseclasses.BaseStructClass):
         boundForwarderEntry.reserved.value = readDataInstance.readWord()
         return boundForwarderEntry
 
+
 class ImageBoundForwarderRef(list):
     """ImageBoundForwarderRef array object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         This class is a wrapper over an array of C{IMAGE_BOUND_FORWARDER_REF}.
 
@@ -104,7 +106,7 @@ class ImageBoundForwarderRef(list):
         return ''.join([str(x) for x in self if x.shouldPack])
 
     @staticmethod
-    def parse(readDataInstance,  numberOfEntries):
+    def parse(readDataInstance, numberOfEntries):
         """
         Returns a L{ImageBoundForwarderRef} array where every element is a L{ImageBoundForwarderRefEntry} object.
 
@@ -134,9 +136,10 @@ class ImageBoundForwarderRef(list):
 
         return imageBoundForwarderRefsList
 
+
 class ImageBoundImportDescriptor(list):
     """ImageBoundImportDescriptor object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Array of L{ImageBoundImportDescriptorEntry} objects.
 
@@ -181,6 +184,7 @@ class ImageBoundImportDescriptor(list):
 
         return ibd
 
+
 # typedef struct IMAGE_BOUND_IMPORT_DESCRIPTOR
 # {
 #    DWORD   TimeDateStamp;
@@ -189,7 +193,7 @@ class ImageBoundImportDescriptor(list):
 # }
 class ImageBoundImportDescriptorEntry(baseclasses.BaseStructClass):
     """ImageBoundImportDescriptorEntry object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         This class represents a C{IMAGE_BOUND_IMPORT_DESCRIPTOR} structure.
         @see: U{http://msdn.microsoft.com/en-us/magazine/cc301808.aspx}
@@ -197,15 +201,15 @@ class ImageBoundImportDescriptorEntry(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDateStamp.
-        self.offsetModuleName = datatypes.WORD(0) #: L{WORD} offsetModuleName.
-        self.numberOfModuleForwarderRefs = datatypes.WORD(0)#: L{WORD} numberOfModuleForwarderRefs.
-        self.forwarderRefsList = ImageBoundForwarderRef() #: L{ImageBoundForwarderRef} forwarderRefsList.
-        self.moduleName = datatypes.String(shouldPack = False) #: moduleName is metadata, not part of the structure.
+        self.timeDateStamp = datatypes.DWORD(0)               #: L{DWORD} timeDateStamp.
+        self.offsetModuleName = datatypes.WORD(0)             #: L{WORD} offsetModuleName.
+        self.numberOfModuleForwarderRefs = datatypes.WORD(0)  #: L{WORD} numberOfModuleForwarderRefs.
+        self.forwarderRefsList = ImageBoundForwarderRef()     #: L{ImageBoundForwarderRef} forwarderRefsList.
+        self.moduleName = datatypes.String(shouldPack=False)  #: moduleName is metadata, not part of the structure.
 
-        self._attrsList = ["timeDateStamp",  "offsetModuleName",  "numberOfModuleForwarderRefs",  "forwarderRefsList",  "moduleName"]
+        self._attrsList = ["timeDateStamp", "offsetModuleName", "numberOfModuleForwarderRefs", "forwarderRefsList", "moduleName"]
 
     def getType(self):
         """Returns L{consts.IMAGE_BOUND_IMPORT_DESCRIPTOR_ENTRY}"""
@@ -231,13 +235,14 @@ class ImageBoundImportDescriptorEntry(baseclasses.BaseStructClass):
         if numberOfForwarderRefsEntries:
             bytesToRead = numberOfForwarderRefsEntries * ImageBoundForwarderRefEntry().sizeof()
             rd = utils.ReadData(readDataInstance.read(bytesToRead))
-            boundEntry.forwarderRefsList = ImageBoundForwarderRef.parse(rd,  numberOfForwarderRefsEntries)
+            boundEntry.forwarderRefsList = ImageBoundForwarderRef.parse(rd, numberOfForwarderRefsEntries)
 
         return boundEntry
 
+
 class TLSDirectory(baseclasses.BaseStructClass):
     """TLS directory object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_TLS_DIRECTORY} structure.
 
@@ -248,14 +253,14 @@ class TLSDirectory(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.startAddressOfRawData = datatypes.DWORD(0) #: L{DWORD} startAddressOfRawData.
-        self.endAddressOfRawData = datatypes.DWORD(0) #: L{DWORD} endAddressOfRawData.
-        self.addressOfIndex = datatypes.DWORD(0) #: L{DWORD} addressOfIndex.
-        self.addressOfCallbacks = datatypes.DWORD(0) #: L{DWORD} addressOfCallbacks.
-        self.sizeOfZeroFill = datatypes.DWORD(0) #: L{DWORD} sizeOfZeroFill.
-        self.characteristics = datatypes.DWORD(0) #:L{DWORD} characteristics.
+        self.startAddressOfRawData = datatypes.DWORD(0)  #: L{DWORD} startAddressOfRawData.
+        self.endAddressOfRawData = datatypes.DWORD(0)    #: L{DWORD} endAddressOfRawData.
+        self.addressOfIndex = datatypes.DWORD(0)         #: L{DWORD} addressOfIndex.
+        self.addressOfCallbacks = datatypes.DWORD(0)     #: L{DWORD} addressOfCallbacks.
+        self.sizeOfZeroFill = datatypes.DWORD(0)         #: L{DWORD} sizeOfZeroFill.
+        self.characteristics = datatypes.DWORD(0)        #: L{DWORD} characteristics.
 
-        self._attrsList = ["startAddressOfRawData", "endAddressOfRawData", "addressOfIndex", "addressOfCallbacks",\
+        self._attrsList = ["startAddressOfRawData", "endAddressOfRawData", "addressOfIndex", "addressOfCallbacks",
                            "sizeOfZeroFill", "characteristics"]
 
     def getType(self):
@@ -283,9 +288,10 @@ class TLSDirectory(baseclasses.BaseStructClass):
         tlsDir.characteristics.value = readDataInstance.readDword()
         return tlsDir
 
+
 class TLSDirectory64(baseclasses.BaseStructClass):
     """TLSDirectory64 object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_TLS_DIRECTORY} structure in 64 bits systems.
 
@@ -294,14 +300,14 @@ class TLSDirectory64(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.startAddressOfRawData = datatypes.QWORD(0) #: L{QWORD} startAddressOfRawData.
-        self.endAddressOfRawData = datatypes.QWORD(0) #: L{QWORD} endAddressOfRawData.
-        self.addressOfIndex = datatypes.QWORD(0) #: L{QWORD} addressOfIndex.
-        self.addressOfCallbacks = datatypes.QWORD(0) #: L{QWORD} addressOfCallbacks.
-        self.sizeOfZeroFill = datatypes.DWORD(0) #: L{DWORD} sizeOfZeroFill.
-        self.characteristics = datatypes.DWORD(0) #: L{DWORD} characteristics.
+        self.startAddressOfRawData = datatypes.QWORD(0)  #: L{QWORD} startAddressOfRawData.
+        self.endAddressOfRawData = datatypes.QWORD(0)    #: L{QWORD} endAddressOfRawData.
+        self.addressOfIndex = datatypes.QWORD(0)         #: L{QWORD} addressOfIndex.
+        self.addressOfCallbacks = datatypes.QWORD(0)     #: L{QWORD} addressOfCallbacks.
+        self.sizeOfZeroFill = datatypes.DWORD(0)         #: L{DWORD} sizeOfZeroFill.
+        self.characteristics = datatypes.DWORD(0)        #: L{DWORD} characteristics.
 
-        self._attrsList = ["startAddressOfRawData", "endAddressOfRawData", "addressOfIndex", "addressOfCallbacks",\
+        self._attrsList = ["startAddressOfRawData", "endAddressOfRawData", "addressOfIndex", "addressOfCallbacks",
                            "sizeOfZeroFill", "characteristics"]
 
     def getType(self):
@@ -329,10 +335,11 @@ class TLSDirectory64(baseclasses.BaseStructClass):
         tlsDir.characteristics.value = readDataInstance.readDword()
         return tlsDir
 
+
 # http://msdn.microsoft.com/en-us/library/windows/desktop/ms680328%28v=vs.85%29.aspx
 class ImageLoadConfigDirectory(baseclasses.BaseStructClass):
     "IMAGE_LOAD_CONFIG_DIRECTORY32 object aka CONFIGURATION_DIRECTORY"
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_LOAD_CONFIG_DIRECTORY32} structure.
 
@@ -350,29 +357,29 @@ class ImageLoadConfigDirectory(baseclasses.BaseStructClass):
         self.criticalSectionDefaultTimeout = datatypes.DWORD()
         self.deCommitFreeBlockThreshold = datatypes.DWORD()
         self.deCommitTotalFreeThreshold = datatypes.DWORD()
-        self.lockPrefixTable = datatypes.DWORD() # VA
+        self.lockPrefixTable = datatypes.DWORD()  # VA
         self.maximumAllocationSize = datatypes.DWORD()
         self.virtualMemoryThreshold = datatypes.DWORD()
         self.processHeapFlags = datatypes.DWORD()
         self.processAffinityMask = datatypes.DWORD()
         self.csdVersion = datatypes.WORD()
         self.reserved1 = datatypes.WORD()
-        self.editList = datatypes.DWORD() # VA
-        self.securityCookie = datatypes.DWORD() # VA
-        self.SEHandlerTable = datatypes.DWORD() # VA
+        self.editList = datatypes.DWORD()  # VA
+        self.securityCookie = datatypes.DWORD()  # VA
+        self.SEHandlerTable = datatypes.DWORD()  # VA
         self.SEHandlerCount = datatypes.DWORD()
 
         # Fields for Control Flow Guard
-        self.GuardCFCheckFunctionPointer = datatypes.DWORD() # VA
+        self.GuardCFCheckFunctionPointer = datatypes.DWORD()  # VA
         self.Reserved2 = datatypes.DWORD()
-        self.GuardCFFunctionTable = datatypes.DWORD() # VA
+        self.GuardCFFunctionTable = datatypes.DWORD()  # VA
         self.GuardCFFunctionCount = datatypes.DWORD()
         self.GuardFlags = datatypes.DWORD()
 
-        self._attrsList = ["size", "timeDateStamp", "majorVersion", "minorVersion", "globalFlagsClear", "globalFlagsSet", "criticalSectionDefaultTimeout", "deCommitFreeBlockThreshold",\
-                            "deCommitTotalFreeThreshold", "lockPrefixTable", "maximumAllocationSize", "virtualMemoryThreshold", "processHeapFlags", "processAffinityMask", "csdVersion",\
-                            "reserved1", "editList", "securityCookie", "SEHandlerTable","SEHandlerCount", "GuardCFCheckFunctionPointer", "Reserved2", "GuardCFFunctionTable",\
-                            "GuardCFFunctionCount", "GuardFlags"]
+        self._attrsList = ["size", "timeDateStamp", "majorVersion", "minorVersion", "globalFlagsClear", "globalFlagsSet", "criticalSectionDefaultTimeout", "deCommitFreeBlockThreshold",
+                           "deCommitTotalFreeThreshold", "lockPrefixTable", "maximumAllocationSize", "virtualMemoryThreshold", "processHeapFlags", "processAffinityMask", "csdVersion",
+                           "reserved1", "editList", "securityCookie", "SEHandlerTable", "SEHandlerCount", "GuardCFCheckFunctionPointer", "Reserved2", "GuardCFFunctionTable",
+                           "GuardCFFunctionCount", "GuardFlags"]
 
     def getType(self):
         """Returns L{consts.IMAGE_LOAD_CONFIG_DIRECTORY32}."""
@@ -400,29 +407,30 @@ class ImageLoadConfigDirectory(baseclasses.BaseStructClass):
         configDir.criticalSectionDefaultTimeout.value = readDataInstance.readDword()
         configDir.deCommitFreeBlockThreshold.value = readDataInstance.readDword()
         configDir.deCommitTotalFreeThreshold.value = readDataInstance.readDword()
-        configDir.lockPrefixTable.value = readDataInstance.readDword() # VA
+        configDir.lockPrefixTable.value = readDataInstance.readDword()  # VA
         configDir.maximumAllocationSize.value = readDataInstance.readDword()
         configDir.virtualMemoryThreshold.value = readDataInstance.readDword()
         configDir.processHeapFlags.value = readDataInstance.readDword()
         configDir.processAffinityMask.value = readDataInstance.readDword()
         configDir.csdVersion.value = readDataInstance.readWord()
         configDir.reserved1.value = readDataInstance.readWord()
-        configDir.editList.value = readDataInstance.readDword() # VA
-        configDir.securityCookie.value = readDataInstance.readDword() # VA
-        configDir.SEHandlerTable.value = readDataInstance.readDword() # VA
+        configDir.editList.value = readDataInstance.readDword()  # VA
+        configDir.securityCookie.value = readDataInstance.readDword()  # VA
+        configDir.SEHandlerTable.value = readDataInstance.readDword()  # VA
         configDir.SEHandlerCount.value = readDataInstance.readDword()
 
         # Fields for Control Flow Guard
-        configDir.GuardCFCheckFunctionPointer.value = readDataInstance.readDword() # VA
+        configDir.GuardCFCheckFunctionPointer.value = readDataInstance.readDword()  # VA
         configDir.Reserved2.value = readDataInstance.readDword()
-        configDir.GuardCFFunctionTable.value = readDataInstance.readDword() # VA
+        configDir.GuardCFFunctionTable.value = readDataInstance.readDword()  # VA
         configDir.GuardCFFunctionCount.value = readDataInstance.readDword()
         configDir.GuardFlags.value = readDataInstance.readDword()
         return configDir
 
+
 class ImageLoadConfigDirectory64(baseclasses.BaseStructClass):
     "IMAGE_LOAD_CONFIG_DIRECTORY64 object"
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_LOAD_CONFIG_DIRECTORY64} structure in 64 bits systems.
 
@@ -453,17 +461,16 @@ class ImageLoadConfigDirectory64(baseclasses.BaseStructClass):
         self.SEHandlerCount = datatypes.QWORD()
 
         # Fields for Control Flow Guard
-        self.GuardCFCheckFunctionPointer = datatypes.QWORD() # VA
+        self.GuardCFCheckFunctionPointer = datatypes.QWORD()  # VA
         self.Reserved2 = datatypes.QWORD()
-        self.GuardCFFunctionTable = datatypes.QWORD() # VA
+        self.GuardCFFunctionTable = datatypes.QWORD()  # VA
         self.GuardCFFunctionCount = datatypes.QWORD()
         self.GuardFlags = datatypes.QWORD()
 
-        self._attrsList = ["size", "timeDateStamp", "majorVersion", "minorVersion", "globalFlagsClear", "globalFlagsSet", "criticalSectionDefaultTimeout", "deCommitFreeBlockThreshold",\
-                            "deCommitTotalFreeThreshold", "lockPrefixTable", "maximumAllocationSize", "virtualMemoryThreshold", "processAffinityMask", "processHeapFlags", "cdsVersion",\
-                            "reserved1", "editList", "securityCookie", "SEHandlerTable", "SEHandlerCount", "GuardCFCheckFunctionPointer", "Reserved2", "GuardCFFunctionTable",\
-                            "GuardCFFunctionCount", "GuardFlags"]
-
+        self._attrsList = ["size", "timeDateStamp", "majorVersion", "minorVersion", "globalFlagsClear", "globalFlagsSet", "criticalSectionDefaultTimeout", "deCommitFreeBlockThreshold",
+                           "deCommitTotalFreeThreshold", "lockPrefixTable", "maximumAllocationSize", "virtualMemoryThreshold", "processAffinityMask", "processHeapFlags", "cdsVersion",
+                           "reserved1", "editList", "securityCookie", "SEHandlerTable", "SEHandlerCount", "GuardCFCheckFunctionPointer", "Reserved2", "GuardCFFunctionTable",
+                           "GuardCFFunctionCount", "GuardFlags"]
 
     def getType(self):
         """Returns L{consts.IMAGE_LOAD_CONFIG_DIRECTORY64}."""
@@ -504,16 +511,17 @@ class ImageLoadConfigDirectory64(baseclasses.BaseStructClass):
         configDir.SEHandlerCount.value = readDataInstance.readQword()
 
         # Fields for Control Flow Guard
-        configDir.GuardCFCheckFunctionPointer.value = readDataInstance.readQword() # VA
+        configDir.GuardCFCheckFunctionPointer.value = readDataInstance.readQword()  # VA
         configDir.Reserved2.value = readDataInstance.readQword()
-        configDir.GuardCFFunctionTable.value = readDataInstance.readQword() # VA
+        configDir.GuardCFFunctionTable.value = readDataInstance.readQword()  # VA
         configDir.GuardCFFunctionCount.value = readDataInstance.readQword()
         configDir.GuardFlags.value = readDataInstance.readQword()
         return configDir
 
+
 class ImageBaseRelocationEntry(baseclasses.BaseStructClass):
     """ImageBaseRelocationEntry object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class representation of a C{IMAGE_BASE_RELOCATION} structure.
         @see: U{http://msdn.microsoft.com/en-us/magazine/cc301808.aspx}
@@ -521,11 +529,11 @@ class ImageBaseRelocationEntry(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.virtualAddress = datatypes.DWORD(0) #: L{DWORD} virtualAddress.
-        self.sizeOfBlock = datatypes.DWORD(0) #: L{DWORD} sizeOfBlock
-        self.items = datatypes.Array(datatypes.TYPE_WORD) #: L{Array} items.
+        self.virtualAddress = datatypes.DWORD(0)           #: L{DWORD} virtualAddress.
+        self.sizeOfBlock = datatypes.DWORD(0)              #: L{DWORD} sizeOfBlock
+        self.items = datatypes.Array(datatypes.TYPE_WORD)  #: L{Array} items.
 
         self._attrsList = ["virtualAddress", "sizeOfBlock", "items"]
 
@@ -548,16 +556,18 @@ class ImageBaseRelocationEntry(baseclasses.BaseStructClass):
         reloc.virtualAddress.value = readDataInstance.readDword()
         reloc.sizeOfBlock.value = readDataInstance.readDword()
         toRead = (reloc.sizeOfBlock.value - 8) / len(datatypes.WORD(0))
-        reloc.items = datatypes.Array.parse(readDataInstance,  datatypes.TYPE_WORD,  toRead)
+        reloc.items = datatypes.Array.parse(readDataInstance, datatypes.TYPE_WORD, toRead)
         return reloc
+
 
 class ImageBaseRelocation(list):
     """ImageBaseRelocation array."""
     pass
 
+
 class ImageDebugDirectory(baseclasses.BaseStructClass):
     """ImageDebugDirectory object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_DEBUG_DIRECTORY} structure.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680307%28v=vs.85%29.aspx}
@@ -565,19 +575,19 @@ class ImageDebugDirectory(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.characteristics = datatypes.DWORD(0) #: L{DWORD} characteristics.
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDateStamp.
-        self.majorVersion = datatypes.WORD(0) #: L{WORD} majorVersion.
-        self.minorVersion = datatypes.WORD(0) #: L{WORD} minorVersion.
-        self.type = datatypes.DWORD(0) #: L{DWORD} type.
-        self.sizeOfData = datatypes.DWORD(0) #: L{DWORD} sizeOfData.
-        self.addressOfData = datatypes.DWORD(0) #: L{DWORD} addressOfData.
-        self.pointerToRawData = datatypes.DWORD(0) #: L{DWORD} pointerToRawData.
+        self.characteristics = datatypes.DWORD(0)   #: L{DWORD} characteristics.
+        self.timeDateStamp = datatypes.DWORD(0)     #: L{DWORD} timeDateStamp.
+        self.majorVersion = datatypes.WORD(0)       #: L{WORD} majorVersion.
+        self.minorVersion = datatypes.WORD(0)       #: L{WORD} minorVersion.
+        self.type = datatypes.DWORD(0)              #: L{DWORD} type.
+        self.sizeOfData = datatypes.DWORD(0)        #: L{DWORD} sizeOfData.
+        self.addressOfData = datatypes.DWORD(0)     #: L{DWORD} addressOfData.
+        self.pointerToRawData = datatypes.DWORD(0)  #: L{DWORD} pointerToRawData.
 
-        self._attrsList = ["characteristics",  "timeDateStamp",  "majorVersion",  "minorVersion",  "type",  "sizeOfData",\
-                           "addressOfData",  "pointerToRawData"]
+        self._attrsList = ["characteristics", "timeDateStamp", "majorVersion", "minorVersion", "type", "sizeOfData",
+                           "addressOfData", "pointerToRawData"]
 
     def getType(self):
         """Returns L{consts.IMAGE_DEBUG_DIRECTORY}."""
@@ -607,9 +617,10 @@ class ImageDebugDirectory(baseclasses.BaseStructClass):
 
         return dbgDir
 
+
 class ImageDebugDirectories(list):
     """ImageDebugDirectories object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Array of L{ImageDebugDirectory} objects.
 
@@ -626,7 +637,7 @@ class ImageDebugDirectories(list):
         return consts.IMAGE_DEBUG_DIRECTORIES
 
     @staticmethod
-    def parse(readDataInstance,  nDebugEntries):
+    def parse(readDataInstance, nDebugEntries):
         """
         Returns a new L{ImageDebugDirectories} object.
 
@@ -654,9 +665,10 @@ class ImageDebugDirectories(list):
 
         return dbgEntries
 
+
 class ImageImportDescriptorMetaData(baseclasses.BaseStructClass):
     """ImageImportDescriptorMetaData object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class used to store metadata from the L{ImageImportDescriptor} object.
 
@@ -665,8 +677,8 @@ class ImageImportDescriptorMetaData(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.moduleName = datatypes.String("") #: L{String} moduleName.
-        self.numberOfImports = datatypes.DWORD(0) #: L{DWORD} numberOfImports.
+        self.moduleName = datatypes.String("")     #: L{String} moduleName.
+        self.numberOfImports = datatypes.DWORD(0)  #: L{DWORD} numberOfImports.
 
         self._attrsList = ["moduleName", "numberOfImports"]
 
@@ -674,9 +686,10 @@ class ImageImportDescriptorMetaData(baseclasses.BaseStructClass):
         """Returns L{consts.IID_METADATA}."""
         return consts.IID_METADATA
 
+
 class ImageImportDescriptorEntry(baseclasses.BaseStructClass):
     """ImageImportDescriptorEntry object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_IMPORT_DESCRIPTOR} structure.
         @see: Figure 5 U{http://msdn.microsoft.com/es-ar/magazine/bb985996%28en-us%29.aspx}
@@ -686,17 +699,17 @@ class ImageImportDescriptorEntry(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.metaData = ImageImportDescriptorMetaData() #: L{ImageImportDescriptorMetaData} metaData.
+        self.metaData = ImageImportDescriptorMetaData()  #: L{ImageImportDescriptorMetaData} metaData.
 
-        self.originalFirstThunk = datatypes.DWORD(0) #: L{DWORD} originalFirstThunk.
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDateStamp.
-        self.forwarderChain = datatypes.DWORD(0) #: L{DWORD} forwarderChain.
-        self.name = datatypes.DWORD(0) #: L{DWORD} name.
-        self.firstThunk = datatypes.DWORD(0) #: L{DWORD} firstThunk.
+        self.originalFirstThunk = datatypes.DWORD(0)     #: L{DWORD} originalFirstThunk.
+        self.timeDateStamp = datatypes.DWORD(0)          #: L{DWORD} timeDateStamp.
+        self.forwarderChain = datatypes.DWORD(0)         #: L{DWORD} forwarderChain.
+        self.name = datatypes.DWORD(0)                   #: L{DWORD} name.
+        self.firstThunk = datatypes.DWORD(0)             #: L{DWORD} firstThunk.
 
-        self.iat = ImportAddressTable() #: L{ImportAddressTable} iat.
+        self.iat = ImportAddressTable()  #: L{ImportAddressTable} iat.
 
-        self._attrsList = ["originalFirstThunk", "timeDateStamp",  "forwarderChain",  "name",  "firstThunk"]
+        self._attrsList = ["originalFirstThunk", "timeDateStamp", "forwarderChain", "name", "firstThunk"]
 
     @staticmethod
     def parse(readDataInstance):
@@ -721,9 +734,10 @@ class ImageImportDescriptorEntry(baseclasses.BaseStructClass):
         """Returns C{consts.IMAGE_IMPORT_DESCRIPTOR_ENTRY}."""
         return consts.IMAGE_IMPORT_DESCRIPTOR_ENTRY
 
+
 class ImageImportDescriptor(list):
     """ImageImportDescriptor object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Array of L{ImageImportDescriptorEntry} objects.
 
@@ -740,7 +754,7 @@ class ImageImportDescriptor(list):
         return consts.IMAGE_IMPORT_DESCRIPTOR
 
     @staticmethod
-    def parse(readDataInstance,  nEntries):
+    def parse(readDataInstance, nEntries):
         """
         Returns a new L{ImageImportDescriptor} object.
 
@@ -768,9 +782,10 @@ class ImageImportDescriptor(list):
 
         return importEntries
 
+
 class ImportAddressTableEntry(baseclasses.BaseStructClass):
     """ImportAddressTableEntry object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class representation of a C{} structure.
 
@@ -779,20 +794,21 @@ class ImportAddressTableEntry(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.firstThunk = datatypes.DWORD(0) #: L{DWORD} firstThunk.
-        self.originalFirstThunk = datatypes.DWORD(0) #: L{DWORD} originalFirstThunk.
-        self.hint = datatypes.WORD(0) #: L{WORD} hint.
-        self.name = datatypes.String("") #: L{String} name.
+        self.firstThunk = datatypes.DWORD(0)          #: L{DWORD} firstThunk.
+        self.originalFirstThunk = datatypes.DWORD(0)  #: L{DWORD} originalFirstThunk.
+        self.hint = datatypes.WORD(0)                 #: L{WORD} hint.
+        self.name = datatypes.String("")              #: L{String} name.
 
-        self._attrsList = ["firstThunk",  "originalFirstThunk",  "hint",  "name"]
+        self._attrsList = ["firstThunk", "originalFirstThunk", "hint", "name"]
 
     def getType(self):
         """Returns L{consts.IMPORT_ADDRESS_TABLE_ENTRY}."""
         return consts.IMPORT_ADDRESS_TABLE_ENTRY
 
+
 class ImportAddressTableEntry64(baseclasses.BaseStructClass):
     """ImportAddressTableEntry64 object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class representation of a C{} structure.
 
@@ -801,46 +817,49 @@ class ImportAddressTableEntry64(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.firstThunk = datatypes.QWORD(0) #: L{QWORD} firstThunk.
-        self.originalFirstThunk = datatypes.QWORD(0) #: L{QWORD} originalFirstThunk.
-        self.hint = datatypes.WORD(0) #: L{WORD} hint.
-        self.name = datatypes.String("") #: L{String} name.
+        self.firstThunk = datatypes.QWORD(0)          #: L{QWORD} firstThunk.
+        self.originalFirstThunk = datatypes.QWORD(0)  #: L{QWORD} originalFirstThunk.
+        self.hint = datatypes.WORD(0)                 #: L{WORD} hint.
+        self.name = datatypes.String("")              #: L{String} name.
 
-        self._attrsList = ["firstThunk",  "originalFirstThunk",  "hint",  "name"]
+        self._attrsList = ["firstThunk", "originalFirstThunk", "hint", "name"]
 
     def getType(self):
         """Returns L{consts.IMPORT_ADDRESS_TABLE_ENTRY64}."""
         return consts.IMPORT_ADDRESS_TABLE_ENTRY64
 
+
 class ImportAddressTable(list):
     """Array of L{ImportAddressTableEntry} objects."""
     pass
+
 
 class ExportTable(list):
     """Array of L{ExportTableEntry} objects."""
     pass
 
+
 class ExportTableEntry(baseclasses.BaseStructClass):
     """ExportTableEntry object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class representation of a C{} structure.
 
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.ordinal = datatypes.DWORD(0) #: L{DWORD} ordinal.
-        self.functionRva = datatypes.DWORD(0) #: L{DWORD} functionRva.
-        self.nameOrdinal = datatypes.WORD(0) #: L{WORD} nameOrdinal.
-        self.nameRva = datatypes.DWORD(0) #: L{DWORD} nameRva.
-        self.name = datatypes.String("") #: L{String} name.
+        self.ordinal = datatypes.DWORD(0)      #: L{DWORD} ordinal.
+        self.functionRva = datatypes.DWORD(0)  #: L{DWORD} functionRva.
+        self.nameOrdinal = datatypes.WORD(0)   #: L{WORD} nameOrdinal.
+        self.nameRva = datatypes.DWORD(0)      #: L{DWORD} nameRva.
+        self.name = datatypes.String("")       #: L{String} name.
 
-        self._attrsList = ["ordinal", "functionRva",  "nameOrdinal",  "nameRva",  "name"]
+        self._attrsList = ["ordinal", "functionRva", "nameOrdinal", "nameRva", "name"]
 
     def __repr__(self):
-        return repr((self.ordinal,  self.functionRva,  self.nameOrdinal,  self.nameRva,  self.name))
+        return repr((self.ordinal, self.functionRva, self.nameOrdinal, self.nameRva, self.name))
 
     def getType(self):
         """Returns L{consts.EXPORT_TABLE_ENTRY}."""
@@ -865,9 +884,10 @@ class ExportTableEntry(baseclasses.BaseStructClass):
         exportEntry.name.value = readDataInstance.readString()
         return exportEntry
 
+
 class ImageExportTable(baseclasses.BaseStructClass):
     """ImageExportTable object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of a C{IMAGE_EXPORT_DIRECTORY} structure.
         @see: Figure 2 U{http://msdn.microsoft.com/en-us/magazine/bb985996.aspx}
@@ -875,24 +895,24 @@ class ImageExportTable(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
         self.exportTable = ExportTable()
 
-        self.characteristics = datatypes.DWORD(0) #: L{DWORD} characteristics.
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDateStamp.
-        self.majorVersion = datatypes.WORD(0) #: L{WORD} majorVersion.
-        self.minorVersion = datatypes.WORD(0) #: L{WORD} minorVersion.
-        self.name = datatypes.DWORD(0) #: L{DWORD} name.
-        self.base = datatypes.DWORD(0) #: L{DWORD} base.
-        self.numberOfFunctions = datatypes.DWORD(0) #: L{DWORD} numberOfFunctions.
-        self.numberOfNames = datatypes.DWORD(0) #: L{DWORD} numberOfNames.
-        self.addressOfFunctions = datatypes.DWORD(0) #: L{DWORD} addressOfFunctions.
-        self.addressOfNames = datatypes.DWORD(0) #: L{DWORD} addressOfNames.
-        self.addressOfNameOrdinals = datatypes.DWORD(0) #: L{DWORD} addressOfNamesOrdinals.
+        self.characteristics = datatypes.DWORD(0)        #: L{DWORD} characteristics.
+        self.timeDateStamp = datatypes.DWORD(0)          #: L{DWORD} timeDateStamp.
+        self.majorVersion = datatypes.WORD(0)            #: L{WORD} majorVersion.
+        self.minorVersion = datatypes.WORD(0)            #: L{WORD} minorVersion.
+        self.name = datatypes.DWORD(0)                   #: L{DWORD} name.
+        self.base = datatypes.DWORD(0)                   #: L{DWORD} base.
+        self.numberOfFunctions = datatypes.DWORD(0)      #: L{DWORD} numberOfFunctions.
+        self.numberOfNames = datatypes.DWORD(0)          #: L{DWORD} numberOfNames.
+        self.addressOfFunctions = datatypes.DWORD(0)     #: L{DWORD} addressOfFunctions.
+        self.addressOfNames = datatypes.DWORD(0)         #: L{DWORD} addressOfNames.
+        self.addressOfNameOrdinals = datatypes.DWORD(0)  #: L{DWORD} addressOfNamesOrdinals.
 
-        self._attrsList = ["characteristics",  "timeDateStamp",  "majorVersion",  "minorVersion", "name",  "base",  "numberOfFunctions",\
-                           "numberOfNames",  "addressOfFunctions",  "addressOfNames",  "addressOfNameOrdinals"]
+        self._attrsList = ["characteristics", "timeDateStamp", "majorVersion", "minorVersion", "name", "base", "numberOfFunctions",
+                           "numberOfNames", "addressOfFunctions", "addressOfNames", "addressOfNameOrdinals"]
 
     def getType(self):
         """Returns L{consts.EXPORT_DIRECTORY}."""
@@ -924,9 +944,10 @@ class ImageExportTable(baseclasses.BaseStructClass):
         et.addressOfNameOrdinals.value = readDataInstance.readDword()
         return et
 
+
 class NETDirectory(baseclasses.BaseStructClass):
     """NETDirectory object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class to abstract data from the .NET PE format.
 
@@ -935,11 +956,11 @@ class NETDirectory(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.directory = NetDirectory() #: L{NetDirectory} directory.
-        self.netMetaDataHeader = NetMetaDataHeader() #: L{NetMetaDataHeader} netMetaDataHeader.
-        self.netMetaDataStreams = NetMetaDataStreams() #: L{NetMetaDataStreams} netMetaDataStreams.
+        self.directory = NetDirectory()                 #: L{NetDirectory} directory.
+        self.netMetaDataHeader = NetMetaDataHeader()    #: L{NetMetaDataHeader} netMetaDataHeader.
+        self.netMetaDataStreams = NetMetaDataStreams()  #: L{NetMetaDataStreams} netMetaDataStreams.
 
-        self._attrsList = ["directory",  "netMetaDataHeader",  "netMetaDataStreams"]
+        self._attrsList = ["directory", "netMetaDataHeader", "netMetaDataStreams"]
 
     @staticmethod
     def parse(readDataInstance):
@@ -963,9 +984,10 @@ class NETDirectory(baseclasses.BaseStructClass):
         """Returns L{consts.NET_DIRECTORY}."""
         return consts.NET_DIRECTORY
 
+
 class NetDirectory(baseclasses.BaseStructClass):
     """NetDirectory object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         A class representation of the C{IMAGE_COR20_HEADER} structure.
         @see: U{http://www.ntcore.com/files/dotnetformat.htm}
@@ -973,25 +995,25 @@ class NetDirectory(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to c{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.cb = datatypes.DWORD(0) #: L{DWORD} cb.
-        self.majorRuntimeVersion = datatypes.WORD(0) #: L{WORD} majorRuntimeVersion.
-        self.minorRuntimeVersion = datatypes.WORD(0) #: L{WORD} minorRuntimeVersion.
-        self.metaData = datadirs.Directory() #: L{Directory} metaData.
-        self.flags = datatypes.DWORD(0) #: L{DWORD} flags.
-        self.entryPointToken = datatypes.DWORD(0) #: L{DWORD} entryPointToken.
-        self.resources = datadirs.Directory() #: L{Directory} resources.
-        self.strongNameSignature = datadirs.Directory() #: L{Directory} strongNameSignature.
-        self.codeManagerTable = datadirs.Directory() #: L{Directory} codeManagerTable.
-        self.vTableFixups = datadirs.Directory() #: L{Directory} vTableFixups.
-        self.exportAddressTableJumps = datadirs.Directory() #: L{Directory} exportAddressTableJumps.
-        self.managedNativeHeader = datadirs.Directory() #: L{Directory} managedNativeHeader.
+        self.cb = datatypes.DWORD(0)                         #: L{DWORD} cb.
+        self.majorRuntimeVersion = datatypes.WORD(0)         #: L{WORD} majorRuntimeVersion.
+        self.minorRuntimeVersion = datatypes.WORD(0)         #: L{WORD} minorRuntimeVersion.
+        self.metaData = datadirs.Directory()                 #: L{Directory} metaData.
+        self.flags = datatypes.DWORD(0)                      #: L{DWORD} flags.
+        self.entryPointToken = datatypes.DWORD(0)            #: L{DWORD} entryPointToken.
+        self.resources = datadirs.Directory()                #: L{Directory} resources.
+        self.strongNameSignature = datadirs.Directory()      #: L{Directory} strongNameSignature.
+        self.codeManagerTable = datadirs.Directory()         #: L{Directory} codeManagerTable.
+        self.vTableFixups = datadirs.Directory()             #: L{Directory} vTableFixups.
+        self.exportAddressTableJumps = datadirs.Directory()  #: L{Directory} exportAddressTableJumps.
+        self.managedNativeHeader = datadirs.Directory()      #: L{Directory} managedNativeHeader.
 
-        self._attrsList = ["cb","majorRuntimeVersion","minorRuntimeVersion","metaData", \
-        "flags","entryPointToken","resources","strongNameSignature",\
-        "codeManagerTable","vTableFixups", "exportAddressTableJumps",\
-        "managedNativeHeader"]
+        self._attrsList = ["cb", "majorRuntimeVersion", "minorRuntimeVersion", "metaData",
+                           "flags", "entryPointToken", "resources", "strongNameSignature",
+                           "codeManagerTable", "vTableFixups", "exportAddressTableJumps",
+                           "managedNativeHeader"]
 
     def getType(self):
         """Returns L{consts.IMAGE_COR20_HEADER}."""
@@ -1011,7 +1033,7 @@ class NetDirectory(baseclasses.BaseStructClass):
         nd = NetDirectory()
 
         nd.cb.value = readDataInstance.readDword()
-        nd.majorRuntimeVersion.value= readDataInstance.readWord()
+        nd.majorRuntimeVersion.value = readDataInstance.readWord()
         nd.minorRuntimeVersion.value = readDataInstance.readWord()
 
         nd.metaData.rva.value = readDataInstance.readDword()
@@ -1047,21 +1069,22 @@ class NetDirectory(baseclasses.BaseStructClass):
 
         return nd
 
+
 class NetMetaDataHeader(baseclasses.BaseStructClass):
     """NetMetaDataHeader object."""
-    def __init__(self,  shouldPack = True):
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+    def __init__(self, shouldPack=True):
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.signature = datatypes.DWORD(0) #: L{DWORD} signature.
-        self.majorVersion = datatypes.WORD(0) #: L{WORD} majorVersion.
-        self.minorVersion = datatypes.WORD(0) #: L{WORD} minorVersion.
-        self.reserved = datatypes.DWORD(0) #: L{DWORD} reserved.
-        self.versionLength = datatypes.DWORD(0) #: L{DWORD} versionLength.
-        self.versionString = datatypes.AlignedString("") #: L{AlignedString} versionString.
-        self.flags = datatypes.WORD(0) #: L{WORD} flags.
-        self.numberOfStreams = datatypes.WORD(0) #: L{WORD} numberOfStreams.
+        self.signature = datatypes.DWORD(0)               #: L{DWORD} signature.
+        self.majorVersion = datatypes.WORD(0)             #: L{WORD} majorVersion.
+        self.minorVersion = datatypes.WORD(0)             #: L{WORD} minorVersion.
+        self.reserved = datatypes.DWORD(0)                #: L{DWORD} reserved.
+        self.versionLength = datatypes.DWORD(0)           #: L{DWORD} versionLength.
+        self.versionString = datatypes.AlignedString("")  #: L{AlignedString} versionString.
+        self.flags = datatypes.WORD(0)                    #: L{WORD} flags.
+        self.numberOfStreams = datatypes.WORD(0)          #: L{WORD} numberOfStreams.
 
-        self._attrsList = ["signature","majorVersion","minorVersion","reserved","versionLength","versionString","flags","numberOfStreams"]
+        self._attrsList = ["signature", "majorVersion", "minorVersion", "reserved", "versionLength", "versionString", "flags", "numberOfStreams"]
 
     def getType(self):
         """Returns L{consts.NET_METADATA_HEADER}."""
@@ -1090,20 +1113,21 @@ class NetMetaDataHeader(baseclasses.BaseStructClass):
         nmh.numberOfStreams.value = readDataInstance.readWord()
         return nmh
 
+
 class NetMetaDataStreamEntry(baseclasses.BaseStructClass):
     """NetMetaDataStreamEntry object."""
-    def __init__(self,  shouldPack = True):
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+    def __init__(self, shouldPack=True):
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.offset = datatypes.DWORD(0) #: L{DWORD} offset.
-        self.size = datatypes.DWORD(0) #: L{DWORD} size.
+        self.offset = datatypes.DWORD(0)         #: L{DWORD} offset.
+        self.size = datatypes.DWORD(0)           #: L{DWORD} size.
         # this must be aligned to the next 4-byte boundary
-        self.name = datatypes.AlignedString("") #: L{AlignedString} name.
+        self.name = datatypes.AlignedString("")  #: L{AlignedString} name.
         # the "info" attribute does not belong to the NETMetaDataStreamEntry struct. It is just a place holder where the
         # data for every entry will be stored.
         self.info = None
 
-        self._attrsList = ["offset",  "size",  "name",  "info"]
+        self._attrsList = ["offset", "size", "name", "info"]
 
     def getType(self):
         """Returns L{consts.NET_METADATA_STREAM_ENTRY}."""
@@ -1126,16 +1150,17 @@ class NetMetaDataStreamEntry(baseclasses.BaseStructClass):
         n.name.value = readDataInstance.readAlignedString()
         return n
 
+
 class NetMetaDataStreams(dict):
     """NetMetaDataStreams object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         self.shouldPack = shouldPack
 
     def __str__(self):
         return "".join([str(x) for x in self if hasattr(x, "shouldPack") and x.shouldPack])
 
     def getByNumber(self, number):
-        return self.get(name)
+        return self.get(number)
 
     def getByName(self, name):
         return self.get(name)
@@ -1145,7 +1170,7 @@ class NetMetaDataStreams(dict):
         return consts.NET_METADATA_STREAMS
 
     @staticmethod
-    def parse(readDataInstance,  nStreams):
+    def parse(readDataInstance, nStreams):
         """
         Returns a new L{NetMetaDataStreams} object.
 
@@ -1167,25 +1192,26 @@ class NetMetaDataStreams(dict):
             streamEntry.size.value = readDataInstance.readDword()
             streamEntry.name.value = readDataInstance.readAlignedString()
 
-            #streams.append(streamEntry)
-            streams.update({ i: streamEntry, streamEntry.name.value: streamEntry })
+            # streams.append(streamEntry)
+            streams.update({i: streamEntry, streamEntry.name.value: streamEntry})
 
         return streams
 
+
 class NetMetaDataTableHeader(baseclasses.BaseStructClass):
     """NetMetaDataTableHeader object."""
-    def __init__(self,  shouldPack = True):
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+    def __init__(self, shouldPack=True):
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.reserved_1 = datatypes.DWORD(0) #: L{DWORD} reserved_1.
-        self.majorVersion = datatypes.BYTE(0) #: L{BYTE} majorVersion.
-        self.minorVersion = datatypes.BYTE(0) #: L{BYTE} minorVersion.
-        self.heapOffsetSizes = datatypes.BYTE(0) #: L{BYTE} heapOffsetSizes.
-        self.reserved_2 = datatypes.BYTE(0) #: L{BYTE} reserved_2.
-        self.maskValid = datatypes.QWORD(0) #: L{QWORD} maskValid.
-        self.maskSorted = datatypes.QWORD(0) #: L{QWORD} maskSorted.
+        self.reserved_1 = datatypes.DWORD(0)      #: L{DWORD} reserved_1.
+        self.majorVersion = datatypes.BYTE(0)     #: L{BYTE} majorVersion.
+        self.minorVersion = datatypes.BYTE(0)     #: L{BYTE} minorVersion.
+        self.heapOffsetSizes = datatypes.BYTE(0)  #: L{BYTE} heapOffsetSizes.
+        self.reserved_2 = datatypes.BYTE(0)       #: L{BYTE} reserved_2.
+        self.maskValid = datatypes.QWORD(0)       #: L{QWORD} maskValid.
+        self.maskSorted = datatypes.QWORD(0)      #: L{QWORD} maskSorted.
 
-        self._attrsList = ["reserved_1",  "majorVersion",  "minorVersion",  "heapOffsetSizes",  "reserved_2",  "maskValid",  "maskSorted"]
+        self._attrsList = ["reserved_1", "majorVersion", "minorVersion", "heapOffsetSizes", "reserved_2", "maskValid", "maskSorted"]
 
     def getType(self):
         """Returns L{consts.NET_METADATA_TABLE_HEADER}."""
@@ -1214,20 +1240,21 @@ class NetMetaDataTableHeader(baseclasses.BaseStructClass):
 
         return th
 
+
 class NetMetaDataTables(baseclasses.BaseStructClass):
     """NetMetaDataTables object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         NetMetaDataTables object.
 
         @todo: Parse every table in this struct and store them in the C{self.tables} attribute.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.netMetaDataTableHeader = NetMetaDataTableHeader() #: L{NetMetaDataTableHeader} netMetaDataTableHeader.
-        self.tables = None #: C{str} tables.
+        self.netMetaDataTableHeader = NetMetaDataTableHeader()  #: L{NetMetaDataTableHeader} netMetaDataTableHeader.
+        self.tables = None  #: C{str} tables.
 
-        self._attrsList = ["netMetaDataTableHeader",  "tables"]
+        self._attrsList = ["netMetaDataTableHeader", "tables"]
 
     def getType(self):
         """Returns L{consts.NET_METADATA_TABLES}."""
@@ -1251,7 +1278,7 @@ class NetMetaDataTables(baseclasses.BaseStructClass):
         metadataTableDefinitions = dotnet.MetadataTableDefinitions(dt, netMetaDataStreams)
 
         for i in xrange(64):
-            dt.tables[i] = { "rows": 0 }
+            dt.tables[i] = {"rows": 0}
             if dt.netMetaDataTableHeader.maskValid.value >> i & 1:
                 dt.tables[i]["rows"] = readDataInstance.readDword()
             if i in dotnet.MetadataTableNames:
@@ -1266,21 +1293,23 @@ class NetMetaDataTables(baseclasses.BaseStructClass):
                 dt.tables[i]["data"].append(row)
 
         for i in xrange(64):
+            table_data = dt.tables[i]["data"]
             if i in dotnet.MetadataTableNames:
-                dt.tables[dotnet.MetadataTableNames[i]] = dt.tables[i]["data"]
-            dt.tables[i] = dt.tables[i]["data"]
+                dt.tables[dotnet.MetadataTableNames[i]] = table_data
+            dt.tables[i] = table_data
 
         return dt
 
+
 class NetResources(baseclasses.BaseStructClass):
     """NetResources object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         NetResources object.
 
         @todo: Parse every resource in this struct and store them in the C{self.resources} attribute.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
         self.signature = datatypes.DWORD(0)
         self.readerCount = datatypes.DWORD(0)
