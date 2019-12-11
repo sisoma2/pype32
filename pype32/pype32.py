@@ -1795,7 +1795,7 @@ class OptionalHeader(baseclasses.BaseStructClass):
         self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE)  #: L{WORD} dllCharacteristics.
         self.sizeOfStackReserve = datatypes.DWORD(0x00100000)   #: L{DWORD} sizeOfStackReserve.
         self.sizeOfStackCommit = datatypes.DWORD(0x00004000)    #: L{DWORD} sizeOfStackCommit.
-        self.sizeOfHeapReserve = datatypes.DWORD(00100000)      #: L{DWORD} sizeOfHeapReserve.
+        self.sizeOfHeapReserve = datatypes.DWORD(0x0100000)     #: L{DWORD} sizeOfHeapReserve.
         self.sizeOfHeapCommit = datatypes.DWORD(0x1000)         #: L{DWORD} sizeOfHeapCommit.
         self.loaderFlags = datatypes.DWORD(0)                   #: L{DWORD} loaderFlags.
         self.numberOfRvaAndSizes = datatypes.DWORD(0x10)        #: L{DWORD} numberOfRvaAndSizes.
