@@ -42,16 +42,16 @@ Common PE structures.
 __revision__ = "$Id$"
 
 __all__ = [
-            "PE",
-            "FileHeader",
-            "DosHeader",
-            "NtHeaders",
-            "OptionalHeader",
-            "OptionalHeader64",
-            "SectionHeader",
-            "SectionHeaders",
-            "Sections",
-           ]
+    "PE",
+    "FileHeader",
+    "DosHeader",
+    "NtHeaders",
+    "OptionalHeader",
+    "OptionalHeader64",
+    "SectionHeader",
+    "SectionHeaders",
+    "Sections",
+]
 
 import os
 import hashlib
@@ -65,11 +65,13 @@ import utils
 import directories
 import baseclasses
 
-from struct import pack, unpack
+from collections import OrderedDict
+from struct import unpack
+
 
 class PE(object):
     """PE object."""
-    def __init__(self, pathToFile = None, data = None, fastLoad = False, verbose = False):
+    def __init__(self, pathToFile=None, data=None, fastLoad=False, verbose=False):
         """
         A class representation of the Portable Executable format.
         @see: PE format U{http://msdn.microsoft.com/en-us/library/windows/desktop/ms680547%28v=vs.85%29.aspx}
@@ -93,11 +95,11 @@ class PE(object):
         @todo: Parse the Exception directory.
         @todo: Add dump() method to show nicely all the structure of the PE file.
         """
-        self.dosHeader = DosHeader() #: L{DosHeader} dosHeader.
-        self.dosStub = PE.getDosStub() #: C{str} dosStub.
-        self.ntHeaders = NtHeaders() #: L{NtHeaders} ntHeaders.
-        self.sectionHeaders = SectionHeaders() #: L{SectionHeaders} sectionHeaders.
-        self.sections = Sections(self.sectionHeaders) #: L{Sections} sections.
+        self.dosHeader = DosHeader()                   #: L{DosHeader} dosHeader.
+        self.dosStub = PE.getDosStub()                 #: C{str} dosStub.
+        self.ntHeaders = NtHeaders()                   #: L{NtHeaders} ntHeaders.
+        self.sectionHeaders = SectionHeaders()         #: L{SectionHeaders} sectionHeaders.
+        self.sections = Sections(self.sectionHeaders)  #: L{Sections} sections.
         self.overlay = ""
         self.signature = ""
 
@@ -108,7 +110,7 @@ class PE(object):
         self._fastLoad = fastLoad
         self.PE_TYPE = None
 
-        if self._data and not isinstance(data,  utils.ReadData):
+        if self._data and not isinstance(data, utils.ReadData):
             rd = utils.ReadData(data)
             self._internalParse(rd)
         elif self._pathToFile:
@@ -116,7 +118,7 @@ class PE(object):
 
                 stat = os.stat(self._pathToFile)
                 if stat.st_size == 0:
-                    raise PEException("File is empty.")
+                    raise excep.PEException("File is empty.")
 
                 self._data = self.readFile(self._pathToFile)
                 rd = utils.ReadData(self._data)
@@ -158,7 +160,7 @@ class PE(object):
         @return: True is the given L{ReadData} stream has the PE signature. Otherwise, False.
         """
         rd.setOffset(0)
-        e_lfanew_offset = unpack("<L",  rd.readAt(0x3c, 4))[0]
+        e_lfanew_offset = unpack("<L", rd.readAt(0x3c, 4))[0]
         sign = rd.readAt(e_lfanew_offset, 2)
         if sign == "PE":
             return True
@@ -181,7 +183,7 @@ class PE(object):
             raise excep.PEException("Invalid PE signature. Found %d instead of %d." % (self.ntHeaders.optionalHeader.signature.value, consts.PE_SIGNATURE))
 
         if self.ntHeaders.optionalHeader.numberOfRvaAndSizes.value > 0x10:
-            print excep.PEWarning("Suspicious value for NumberOfRvaAndSizes: %d." % self.ntHeaders.optionalHeader.numberOfRvaAndSizes.value)
+            print(excep.PEWarning("Suspicious value for NumberOfRvaAndSizes: %d." % self.ntHeaders.optionalHeader.numberOfRvaAndSizes.value))
 
     def readFile(self, pathToFile):
         """
@@ -193,12 +195,12 @@ class PE(object):
         @rtype: str
         @return: The data from file.
         """
-        fd = open(pathToFile,  "rb")
+        fd = open(pathToFile, "rb")
         data = fd.read()
         fd.close()
         return data
 
-    def write(self, filename = ""):
+    def write(self, filename=""):
         """
         Writes data from L{PE} object to a file.
 
@@ -240,8 +242,8 @@ class PE(object):
             padding = self._getPaddingDataToSectionOffset()
 
         pe = str(self.dosHeader) + str(self.dosStub) + str(self.ntHeaders) + str(self.sectionHeaders) + str(padding) + str(self.sections) + str(self.overlay)
-        #if not self._fastLoad:
-            #pe = self._updateDirectoriesData(pe)
+        # if not self._fastLoad:
+        #     pe = self._updateDirectoriesData(pe)
         return pe
 
     def _updateDirectoriesData(self, peStr):
@@ -255,12 +257,12 @@ class PE(object):
         @return: A C{str} representation of the L{PE} object.
         """
         dataDirs = self.ntHeaders.optionalHeader.dataDirectory
-        wr = utils.WriteData(data)
+        wr = utils.WriteData(peStr)
 
         for dir in dataDirs:
             dataToWrite = str(dir.info)
             if len(dataToWrite) != dir.size.value and self._verbose:
-                print excep.DataLengthException("Warning: current size of %s directory does not match with dataToWrite length %d." % (dir.size.value, len(dataToWrite)))
+                print(excep.DataLengthException("Warning: current size of %s directory does not match with dataToWrite length %d." % (dir.size.value, len(dataToWrite))))
             wr.setOffset(self.getOffsetFromRva(dir.rva.value))
             wr.write(dataToWrite)
         return str(wr)
@@ -274,7 +276,7 @@ class PE(object):
         """
         start = self._getPaddingToSectionOffset()
         end = self.sectionHeaders[0].pointerToRawData.value - start
-        return self._data[start:start+end]
+        return self._data[start:start + end]
 
     def _getSignature(self, readDataInstance, dataDirectoryInstance):
         """
@@ -327,7 +329,7 @@ class PE(object):
                 readDataInstance.setOffset(offset)
             except excep.WrongOffsetValueException:
                 if self._verbose:
-                    print "It seems that the file has no overlay data."
+                    print("It seems that the file has no overlay data.")
         else:
             raise excep.InstanceErrorException("ReadData instance or SectionHeaders instance not specified.")
 
@@ -426,10 +428,10 @@ class PE(object):
             fa = self.ntHeaders.optionalHeader.fileAlignment.value
             prd = self.sectionHeaders[i].pointerToRawData.value
             srd = self.sectionHeaders[i].sizeOfRawData.value
-            if len(str(self)) - self._adjustFileAlignment(prd,  fa) < srd:
+            if len(str(self)) - self._adjustFileAlignment(prd, fa) < srd:
                 size = self.sectionHeaders[i].misc.value
             else:
-                size = max(srd,  self.sectionHeaders[i].misc.value)
+                size = max(srd, self.sectionHeaders[i].misc.value)
             if (self.sectionHeaders[i].virtualAddress.value <= rva) and rva < (self.sectionHeaders[i].virtualAddress.value + size):
                 index = i
                 break
@@ -478,21 +480,21 @@ class PE(object):
             readDataInstance.setOffset(readDataInstance.tell() - OptionalHeader().sizeof())
             self.ntHeaders.optionalHeader = OptionalHeader64.parse(readDataInstance)
 
-        self.sectionHeaders = SectionHeaders.parse(readDataInstance,  self.ntHeaders.fileHeader.numberOfSections.value)
+        self.sectionHeaders = SectionHeaders.parse(readDataInstance, self.ntHeaders.fileHeader.numberOfSections.value)
 
         # as padding is possible between the last section header and the beginning of the first section
         # we must adjust the offset in readDataInstance to point to the first byte of the first section.
         readDataInstance.setOffset(self.sectionHeaders[0].pointerToRawData.value)
 
-        self.sections = Sections.parse(readDataInstance,  self.sectionHeaders)
+        self.sections = Sections.parse(readDataInstance, self.sectionHeaders)
 
-        self.overlay = self._getOverlay(readDataInstance,  self.sectionHeaders)
-        self.signature = self._getSignature(readDataInstance,  self.ntHeaders.optionalHeader.dataDirectory)
+        self.overlay = self._getOverlay(readDataInstance, self.sectionHeaders)
+        self.signature = self._getSignature(readDataInstance, self.ntHeaders.optionalHeader.dataDirectory)
 
         if not self._fastLoad:
             self._parseDirectories(self.ntHeaders.optionalHeader.dataDirectory, self.PE_TYPE)
 
-    def addSection(self, data, name =".pype32\x00", flags = 0x60000000):
+    def addSection(self, data, name=".pype32\x00", flags=0x60000000):
         """
         Adds a new section to the existing L{PE} instance.
 
@@ -518,11 +520,11 @@ class PE(object):
             pointerToRawDataLastSection = self.sectionHeaders[-1].pointerToRawData.value
             sizeOfRawDataLastSection = self.sectionHeaders[-1].sizeOfRawData.value
 
-            sh.virtualAddress.value = self._adjustSectionAlignment(vaLastSection + sizeLastSection,  fa, sa)
-            sh.pointerToRawData.value = self._adjustFileAlignment(pointerToRawDataLastSection + sizeOfRawDataLastSection,  fa)
+            sh.virtualAddress.value = self._adjustSectionAlignment(vaLastSection + sizeLastSection, fa, sa)
+            sh.pointerToRawData.value = self._adjustFileAlignment(pointerToRawDataLastSection + sizeOfRawDataLastSection, fa)
 
-        sh.misc.value = self._adjustSectionAlignment(len(data),  fa,  sa) or consts.DEFAULT_PAGE_SIZE
-        sh.sizeOfRawData.value = self._adjustFileAlignment(len(data),  fa) or consts.DEFAULT_FILE_ALIGNMENT
+        sh.misc.value = self._adjustSectionAlignment(len(data), fa, sa) or consts.DEFAULT_PAGE_SIZE
+        sh.sizeOfRawData.value = self._adjustFileAlignment(len(data), fa) or consts.DEFAULT_FILE_ALIGNMENT
         sh.characteristics.value = flags
         sh.name.value = name
 
@@ -555,8 +557,8 @@ class PE(object):
                     vzLastSection = self.sectionHeaders[-1].misc.value
                     rzLastSection = self.sectionHeaders[-1].sizeOfRawData.value
 
-                    self.sectionHeaders[-1].misc.value = self._adjustSectionAlignment(vzLastSection + len(data), fa,  sa)
-                    self.sectionHeaders[-1].sizeOfRawData.value = self._adjustFileAlignment(rzLastSection + len(data),  fa)
+                    self.sectionHeaders[-1].misc.value = self._adjustSectionAlignment(vzLastSection + len(data), fa, sa)
+                    self.sectionHeaders[-1].sizeOfRawData.value = self._adjustFileAlignment(rzLastSection + len(data), fa)
 
                     vz = self.sectionHeaders[-1].misc.value
                     rz = self.sectionHeaders[-1].sizeOfRawData.value
@@ -565,7 +567,7 @@ class PE(object):
                     raise IndexError("list index out of range.")
 
                 if vz < rz:
-                    print "WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz)
+                    print("WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz, rz))
 
                 if len(data) % fa == 0:
                     self.sections[-1] += data
@@ -581,8 +583,8 @@ class PE(object):
                     vzCurrentSection = self.sectionHeaders[counter].misc.value
                     rzCurrentSection = self.sectionHeaders[counter].sizeOfRawData.value
 
-                    self.sectionHeaders[counter].misc.value = self._adjustSectionAlignment(vzCurrentSection + len(data),  fa,  sa)
-                    self.sectionHeaders[counter].sizeOfRawData.value = self._adjustFileAlignment(rzCurrentSection + len(data),  fa)
+                    self.sectionHeaders[counter].misc.value = self._adjustSectionAlignment(vzCurrentSection + len(data), fa, sa)
+                    self.sectionHeaders[counter].sizeOfRawData.value = self._adjustFileAlignment(rzCurrentSection + len(data), fa)
 
                     if len(data) % fa == 0:
                         self.sections[counter] += data
@@ -598,14 +600,14 @@ class PE(object):
                         roPreviousSection = self.sectionHeaders[counter - 1].pointerToRawData.value
 
                         # adjust VA and RO of the next section
-                        self.sectionHeaders[counter].virtualAddress.value = self._adjustSectionAlignment(vzPreviousSection + vaPreviousSection,  fa,  sa)
-                        self.sectionHeaders[counter].pointerToRawData.value = self._adjustFileAlignment(rzPreviousSection + roPreviousSection,  fa)
+                        self.sectionHeaders[counter].virtualAddress.value = self._adjustSectionAlignment(vzPreviousSection + vaPreviousSection, fa, sa)
+                        self.sectionHeaders[counter].pointerToRawData.value = self._adjustFileAlignment(rzPreviousSection + roPreviousSection, fa)
 
                         vz = self.sectionHeaders[counter].virtualAddress.value
                         rz = self.sectionHeaders[counter].pointerToRawData.value
 
                         if vz < rz:
-                            print "WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz,  rz)
+                            print("WARNING: VirtualSize (%x) is less than SizeOfRawData (%x)" % (vz, rz))
 
                         counter += 1
 
@@ -639,7 +641,7 @@ class PE(object):
         """
         if fileAlignment > consts.DEFAULT_FILE_ALIGNMENT:
             if not utils.powerOfTwo(fileAlignment):
-                print "Warning: FileAlignment is greater than DEFAULT_FILE_ALIGNMENT (0x200) and is not power of two."
+                print("Warning: FileAlignment is greater than DEFAULT_FILE_ALIGNMENT (0x200) and is not power of two.")
 
         if fileAlignment < consts.DEFAULT_FILE_ALIGNMENT:
             return value
@@ -666,8 +668,8 @@ class PE(object):
         @return: The aligned value.
         """
         if fileAlignment < consts.DEFAULT_FILE_ALIGNMENT:
-            if fileAligment != sectionAlignment:
-                print "FileAlignment does not match SectionAlignment."
+            if fileAlignment != sectionAlignment:
+                print("FileAlignment does not match SectionAlignment.")
 
         if sectionAlignment < consts.DEFAULT_PAGE_SIZE:
             sectionAlignment = fileAlignment
@@ -686,7 +688,7 @@ class PE(object):
         @rtype: L{DWORD}
         @return: The L{DWORD} obtained at the given RVA.
         """
-        return datatypes.DWORD.parse(utils.ReadData(self.getDataAtRva(rva,  4)))
+        return datatypes.DWORD.parse(utils.ReadData(self.getDataAtRva(rva, 4)))
 
     def getWordAtRva(self, rva):
         """
@@ -698,7 +700,7 @@ class PE(object):
         @rtype: L{WORD}
         @return: The L{WORD} obtained at the given RVA.
         """
-        return datatypes.WORD.parse(utils.ReadData(self.getDataAtRva(rva,  2)))
+        return datatypes.WORD.parse(utils.ReadData(self.getDataAtRva(rva, 2)))
 
     def getDwordAtOffset(self, offset):
         """
@@ -710,7 +712,7 @@ class PE(object):
         @rtype: L{DWORD}
         @return: The L{DWORD} obtained at the given offset.
         """
-        return datatypes.DWORD.parse(utils.ReadData(self.getDataAtOffset(offset,  4)))
+        return datatypes.DWORD.parse(utils.ReadData(self.getDataAtOffset(offset, 4)))
 
     def getWordAtOffset(self, offset):
         """
@@ -734,7 +736,7 @@ class PE(object):
         @rtype: L{QWORD}
         @return: The L{QWORD} obtained at the given RVA.
         """
-        return datatypes.QWORD.parse(utils.ReadData(self.getDataAtRva(rva,  8)))
+        return datatypes.QWORD.parse(utils.ReadData(self.getDataAtRva(rva, 8)))
 
     def getQwordAtOffset(self, offset):
         """
@@ -746,7 +748,7 @@ class PE(object):
         @rtype: L{QWORD}
         @return: The L{QWORD} obtained at the given offset.
         """
-        return datatypes.QWORD.parse(utils.ReadData(self.getDataAtOffset(offset,  8)))
+        return datatypes.QWORD.parse(utils.ReadData(self.getDataAtOffset(offset, 8)))
 
     def getDataAtRva(self, rva, size):
         """
@@ -761,7 +763,7 @@ class PE(object):
         @rtype: str
         @return: The data obtained at the given RVA.
         """
-        return self.getDataAtOffset(self.getOffsetFromRva(rva),  size)
+        return self.getDataAtOffset(self.getOffsetFromRva(rva), size)
 
     def getDataAtOffset(self, offset, size):
         """
@@ -777,7 +779,7 @@ class PE(object):
         @return: The data obtained at the given offset.
         """
         data = str(self)
-        return data[offset:offset+size]
+        return data[offset:offset + size]
 
     def readStringAtRva(self, rva):
         """
@@ -789,7 +791,7 @@ class PE(object):
         @rtype: L{String}
         @return: A new L{String} object from the given RVA.
         """
-        d = self.getDataAtRva(rva,  1)
+        d = self.getDataAtRva(rva, 1)
         resultStr = datatypes.String("")
         while d != "\x00":
             resultStr.value += d
@@ -804,7 +806,7 @@ class PE(object):
         @rtype: bool
         @return: C{True} if the current L{PE} instance is an Executable file. Otherwise, returns C{False}.
         """
-        if not self.isDll() and not self.isDriver() and ( consts.IMAGE_FILE_EXECUTABLE_IMAGE & self.ntHeaders.fileHeader.characteristics.value) == consts.IMAGE_FILE_EXECUTABLE_IMAGE:
+        if not self.isDll() and not self.isDriver() and (consts.IMAGE_FILE_EXECUTABLE_IMAGE & self.ntHeaders.fileHeader.characteristics.value) == consts.IMAGE_FILE_EXECUTABLE_IMAGE:
             return True
         return False
 
@@ -925,7 +927,7 @@ class PE(object):
                 return SAFESEH_ON
         return SAFESEH_OFF
 
-    def _parseDirectories(self, dataDirectoryInstance, magic = consts.PE32):
+    def _parseDirectories(self, dataDirectoryInstance, magic=consts.PE32):
         """
         Parses all the directories in the L{PE} instance.
 
@@ -935,27 +937,29 @@ class PE(object):
         @type magic: int
         @param magic: (Optional) The type of PE. This value could be L{consts.PE32} or L{consts.PE64}.
         """
-        directories = [(consts.EXPORT_DIRECTORY, self._parseExportDirectory),\
-                         (consts.IMPORT_DIRECTORY, self._parseImportDirectory),\
-                         (consts.RESOURCE_DIRECTORY, self._parseResourceDirectory),\
-                         (consts.EXCEPTION_DIRECTORY, self._parseExceptionDirectory),\
-                         (consts.RELOCATION_DIRECTORY, self._parseRelocsDirectory),\
-                         (consts.TLS_DIRECTORY, self._parseTlsDirectory),\
-                         (consts.DEBUG_DIRECTORY, self._parseDebugDirectory),\
-                         (consts.BOUND_IMPORT_DIRECTORY, self._parseBoundImportDirectory),\
-                         (consts.DELAY_IMPORT_DIRECTORY, self._parseDelayImportDirectory),\
-                         (consts.CONFIGURATION_DIRECTORY, self._parseLoadConfigDirectory),\
-                         (consts.NET_METADATA_DIRECTORY, self._parseNetDirectory)]
+        directories = [
+            (consts.EXPORT_DIRECTORY, self._parseExportDirectory),
+            (consts.IMPORT_DIRECTORY, self._parseImportDirectory),
+            (consts.RESOURCE_DIRECTORY, self._parseResourceDirectory),
+            (consts.EXCEPTION_DIRECTORY, self._parseExceptionDirectory),
+            (consts.RELOCATION_DIRECTORY, self._parseRelocsDirectory),
+            (consts.TLS_DIRECTORY, self._parseTlsDirectory),
+            (consts.DEBUG_DIRECTORY, self._parseDebugDirectory),
+            (consts.BOUND_IMPORT_DIRECTORY, self._parseBoundImportDirectory),
+            (consts.DELAY_IMPORT_DIRECTORY, self._parseDelayImportDirectory),
+            (consts.CONFIGURATION_DIRECTORY, self._parseLoadConfigDirectory),
+            (consts.NET_METADATA_DIRECTORY, self._parseNetDirectory)
+        ]
 
         for directory in directories:
             dir = dataDirectoryInstance[directory[0]]
             if dir.rva.value and dir.size.value:
                 try:
                     dataDirectoryInstance[directory[0]].info = directory[1](dir.rva.value, dir.size.value, magic)
-                except Exception as e:
-                    print excep.PEWarning("Error parsing PE directory: %s." % directory[1].__name__.replace("_parse", ""))
+                except Exception:
+                    print(excep.PEWarning("Error parsing PE directory: %s." % directory[1].__name__.replace("_parse", "")))
 
-    def _parseResourceDirectory(self, rva, size, magic = consts.PE32):
+    def _parseResourceDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the C{IMAGE_RESOURCE_DIRECTORY} directory.
 
@@ -973,7 +977,7 @@ class PE(object):
         """
         return self.getDataAtRva(rva, size)
 
-    def _parseExceptionDirectory(self, rva, size, magic = consts.PE32):
+    def _parseExceptionDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the C{IMAGE_EXCEPTION_DIRECTORY} directory.
 
@@ -991,7 +995,7 @@ class PE(object):
         """
         return self.getDataAtRva(rva, size)
 
-    def _parseDelayImportDirectory(self, rva, size, magic = consts.PE32):
+    def _parseDelayImportDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the delay imports directory.
 
@@ -1009,7 +1013,7 @@ class PE(object):
         """
         return self.getDataAtRva(rva, size)
 
-    def _parseBoundImportDirectory(self, rva, size, magic = consts.PE32):
+    def _parseBoundImportDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the bound import directory.
 
@@ -1031,7 +1035,7 @@ class PE(object):
 
         # parse the name of every bounded import.
         for i in xrange(len(boundImportDirectory) - 1):
-            if hasattr(boundImportDirectory[i],  "forwarderRefsList"):
+            if hasattr(boundImportDirectory[i], "forwarderRefsList"):
                 if boundImportDirectory[i].forwarderRefsList:
                     for forwarderRefEntry in boundImportDirectory[i].forwarderRefsList:
                         offset = forwarderRefEntry.offsetModuleName.value
@@ -1041,7 +1045,7 @@ class PE(object):
             boundImportDirectory[i].moduleName = self.readStringAtRva(offset + rva)
         return boundImportDirectory
 
-    def _parseLoadConfigDirectory(self, rva, size, magic = consts.PE32):
+    def _parseLoadConfigDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses IMAGE_LOAD_CONFIG_DIRECTORY.
 
@@ -1058,7 +1062,7 @@ class PE(object):
         @return: A new L{ImageLoadConfigDirectory}.
         @note: if the L{PE} instance is a PE64 file then a new L{ImageLoadConfigDirectory64} is returned.
         """
-        # print "RVA: %x - SIZE: %x" % (rva, size)
+        # print("RVA: %x - SIZE: %x" % (rva, size))
 
         # I've found some issues when parsing the IMAGE_LOAD_CONFIG_DIRECTORY in some DLLs.
         # There is an inconsistency with the size of the struct between MSDN docs and VS.
@@ -1076,7 +1080,7 @@ class PE(object):
         else:
             raise excep.InvalidParameterException("Wrong magic")
 
-    def _parseTlsDirectory(self, rva, size, magic = consts.PE32):
+    def _parseTlsDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the TLS directory.
 
@@ -1103,7 +1107,7 @@ class PE(object):
         else:
             raise excep.InvalidParameterException("Wrong magic")
 
-    def _parseRelocsDirectory(self, rva, size, magic = consts.PE32):
+    def _parseRelocsDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the relocation directory.
 
@@ -1119,8 +1123,8 @@ class PE(object):
         @rtype: L{ImageBaseRelocation}
         @return: A new L{ImageBaseRelocation} object.
         """
-        data = self.getDataAtRva(rva,  size)
-        #print "Length Relocation data: %x" % len(data)
+        data = self.getDataAtRva(rva, size)
+        # print("Length Relocation data: %x" % len(data))
         rd = utils.ReadData(data)
 
         relocsArray = directories.ImageBaseRelocation()
@@ -1129,7 +1133,7 @@ class PE(object):
             relocsArray.append(relocEntry)
         return relocsArray
 
-    def _parseExportDirectory(self, rva, size, magic = consts.PE32):
+    def _parseExportDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the C{IMAGE_EXPORT_DIRECTORY} directory.
 
@@ -1145,7 +1149,7 @@ class PE(object):
         @rtype: L{ImageExportTable}
         @return: A new L{ImageExportTable} object.
         """
-        data = self.getDataAtRva(rva,  size)
+        data = self.getDataAtRva(rva, size)
         rd = utils.ReadData(data)
 
         iet = directories.ImageExportTable.parse(rd)
@@ -1171,7 +1175,7 @@ class PE(object):
             entry = directories.ExportTableEntry()
 
             ordinal = nameOrdinal + iet.base.value
-            #print "Ordinal value: %d" % ordinal
+            # print("Ordinal value: %d" % ordinal)
             entry.ordinal.value = ordinal
 
             entry.nameOrdinal.vaue = nameOrdinal
@@ -1184,11 +1188,11 @@ class PE(object):
             addressOfNames += datatypes.DWORD().sizeof()
             addressOfNameOrdinals += datatypes.WORD().sizeof()
 
-        #print "export table length: %d" % len(iet.exportTable)
+        # print("export table length: %d" % len(iet.exportTable))
 
-        #print "auxFunctionRvaArray: %r" % auxFunctionRvaArray
+        # print("auxFunctionRvaArray: %r" % auxFunctionRvaArray)
         for i in xrange(iet.numberOfFunctions.value):
-            #print "auxFunctionRvaArray[%d]: %x" % (i,  auxFunctionRvaArray[i])
+            # print("auxFunctionRvaArray[%d]: %x" % (i,  auxFunctionRvaArray[i]))
             if auxFunctionRvaArray[i] != iet.exportTable[i].functionRva.value:
                 entry = directories.ExportTableEntry()
 
@@ -1197,11 +1201,11 @@ class PE(object):
 
                 iet.exportTable.append(entry)
 
-        #print "export table length: %d" % len(iet.exportTable)
-        sorted(iet.exportTable, key=lambda entry:entry.ordinal)
+        # print("export table length: %d" % len(iet.exportTable))
+        sorted(iet.exportTable, key=lambda entry: entry.ordinal)
         return iet
 
-    def _parseDebugDirectory(self, rva, size, magic = consts.PE32):
+    def _parseDebugDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the C{IMAGE_DEBUG_DIRECTORY} directory.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680307(v=vs.85).aspx}
@@ -1221,9 +1225,9 @@ class PE(object):
         debugDirData = self.getDataAtRva(rva, size)
         numberOfEntries = size / consts.SIZEOF_IMAGE_DEBUG_ENTRY32
         rd = utils.ReadData(debugDirData)
-        return directories.ImageDebugDirectories.parse(rd,  numberOfEntries)
+        return directories.ImageDebugDirectories.parse(rd, numberOfEntries)
 
-    def _parseImportDirectory(self, rva, size, magic = consts.PE32):
+    def _parseImportDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the C{IMAGE_IMPORT_DIRECTORY} directory.
 
@@ -1241,9 +1245,9 @@ class PE(object):
 
         @raise InvalidParameterException: If wrong magic was specified.
         """
-        #print "RVA: %x - Size: %x" % (rva, size)
-        importsDirData = self.getDataAtRva(rva,  size)
-        #print "Length importsDirData: %d" % len(importsDirData)
+        # print("RVA: %x - Size: %x" % (rva, size))
+        importsDirData = self.getDataAtRva(rva, size)
+        # print("Length importsDirData: %d" % len(importsDirData))
         numberOfEntries = size / consts.SIZEOF_IMAGE_IMPORT_ENTRY32
         rd = utils.ReadData(importsDirData)
 
@@ -1259,7 +1263,7 @@ class PE(object):
                 count += 1
             except excep.DataLengthException:
                 if self._verbose:
-                    print "[!] Warning: DataLengthException detected!."
+                    print("[!] Warning: DataLengthException detected!.")
 
         if numberOfEntries - 1 > count:
             numberOfEntries = count + 1
@@ -1276,9 +1280,9 @@ class PE(object):
             ORDINAL_FLAG = consts.IMAGE_ORDINAL_FLAG
             ADDRESS_MASK = consts.ADDRESS_MASK32
         else:
-            raise InvalidParameterException("magic value %d is not PE64 nor PE32." % magic)
+            raise excep.InvalidParameterException("magic value %d is not PE64 nor PE32." % magic)
 
-        for i in xrange(iidLength -1):
+        for i in xrange(iidLength - 1):
             if iid[i].originalFirstThunk.value != 0:
                 iltRva = iid[i].originalFirstThunk.value
                 iatRva = iid[i].firstThunk.value
@@ -1361,7 +1365,7 @@ class PE(object):
             iid[i].metaData.numberOfImports.value = len(iid[i].iat)
         return iid
 
-    def _parseNetDirectory(self, rva, size, magic = consts.PE32):
+    def _parseNetDirectory(self, rva, size, magic=consts.PE32):
         """
         Parses the NET directory.
         @see: U{http://www.ntcore.com/files/dotnetformat.htm}
@@ -1385,7 +1389,7 @@ class PE(object):
         netDirectoryClass = directories.NETDirectory()
 
         # parse the .NET Directory
-        netDir = directories.NetDirectory.parse(utils.ReadData(self.getDataAtRva(rva,  size)))
+        netDir = directories.NetDirectory.parse(utils.ReadData(self.getDataAtRva(rva, size)))
 
         netDirectoryClass.directory = netDir
 
@@ -1408,25 +1412,25 @@ class PE(object):
             name = stream.name.value
             rd.setOffset(stream.offset.value)
             rd2 = utils.ReadData(rd.read(stream.size.value))
-            stream.info = []
+            stream.info = OrderedDict()
             if name in ("#~", "#-"):
                 stream.info = rd2
             elif name == "#Strings":
                 while len(rd2) > 0:
                     offset = rd2.tell()
-                    stream.info.append({ offset: rd2.readDotNetString() })
+                    stream.info[offset] = rd2.readDotNetString()
             elif name == "#US":
                 while len(rd2) > 0:
                     offset = rd2.tell()
-                    stream.info.append({ offset: rd2.readDotNetUnicodeString() })
+                    stream.info[offset] = rd2.readDotNetUnicodeString()
             elif name == "#GUID":
                 while len(rd2) > 0:
                     offset = rd2.tell()
-                    stream.info.append({ offset: rd2.readDotNetGuid() })
+                    stream.info[offset] = rd2.readDotNetGuid()
             elif name == "#Blob":
                 while len(rd2) > 0:
                     offset = rd2.tell()
-                    stream.info.append({ offset: rd2.readDotNetBlob() })
+                    stream.info[offset] = rd2.readDotNetBlob()
 
         for i in xrange(numberOfStreams):
             stream = netDirectoryClass.netMetaDataStreams[i]
@@ -1451,7 +1455,7 @@ class PE(object):
             data = rd.read(size)
             if data[:4] == "\xce\xca\xef\xbe":
                 data = directories.NetResources.parse(utils.ReadData(data))
-            resources.append({ "name": i["name"], "offset": offset + 4, "size": size, "data": data })
+            resources.append({"name": i["name"], "offset": offset + 4, "size": size, "data": data})
 
         netDirectoryClass.directory.resources.info = resources
 
@@ -1513,14 +1517,15 @@ class PE(object):
                             retval = True
                             break
             else:
-                print "WARNING: IMPORT_DIRECTORY not found on PE!"
+                print("WARNING: IMPORT_DIRECTORY not found on PE!")
         else:
-            print "WARNING: fastLoad parameter was used to load the PE. Data directories are not parsed when using this options. Please, use fastLoad = False."
+            print("WARNING: fastLoad parameter was used to load the PE. Data directories are not parsed when using this options. Please, use fastLoad = False.")
         return retval
 
     def getNetMetadataToken(self, token):
         dnh = self.ntHeaders.optionalHeader.dataDirectory[14].info
-        if not dnh: return None
+        if not dnh:
+            return None
         tables = dnh.netMetaDataStreams[0].info.tables
 
         tblid = token >> 24 & 0xff
@@ -1536,7 +1541,8 @@ class PE(object):
 
     def getNetEntryPointOffset(self):
         dnh = self.ntHeaders.optionalHeader.dataDirectory[14].info
-        if not dnh: return None
+        if not dnh:
+            return None
         dnh = dnh.directory
 
         token = self.getNetMetadataToken(dnh.entryPointToken.value)
@@ -1570,48 +1576,49 @@ class PE(object):
 
         return offset
 
+
 class DosHeader(baseclasses.BaseStructClass):
     """DosHeader object."""
-    def __init__(self,  shouldPack = True):
-         """
-         Class representation of the C{IMAGE_DOS_HEADER} structure.
-         @see: U{http://msdn.microsoft.com/en-us/magazine/cc301805.aspx}
+    def __init__(self, shouldPack=True):
+        """
+        Class representation of the C{IMAGE_DOS_HEADER} structure.
+        @see: U{http://msdn.microsoft.com/en-us/magazine/cc301805.aspx}
 
-         @type shouldPack: bool
-         @param shouldPack: (Optional) If set to C{True}, the object will be packed. If set to C{False}, the object won't be packed.
-         """
-         baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        @type shouldPack: bool
+        @param shouldPack: (Optional) If set to C{True}, the object will be packed. If set to C{False}, the object won't be packed.
+        """
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-         self.e_magic = datatypes.WORD(consts.MZ_SIGNATURE) #: L{WORD} e_magic.
-         self.e_cblp = datatypes.WORD(0) #: L{WORD} e_cblp.
-         self.e_cp = datatypes.WORD(0) #: L{WORD} e_cp.
-         self.e_crlc = datatypes.WORD(0) #: L{WORD} e_crlc.
-         self.e_cparhdr = datatypes.WORD(0) #: L{WORD} e_cparhdr.
-         self.e_minalloc = datatypes.WORD(0) #: L{WORD} e_minalloc.
-         self.e_maxalloc = datatypes.WORD(0) #: L{WORD} e_maxalloc.
-         self.e_ss = datatypes.WORD(0) #: L{WORD} e_ss.
-         self.e_sp = datatypes.WORD(0) #: L{WORD} e_sp.
-         self.e_csum = datatypes.WORD(0) #: L{WORD} e_csum.
-         self.e_ip = datatypes.WORD(0) #: L{WORD} e_ip.
-         self.e_cs = datatypes.WORD(0) #: L{WORD} e_cs.
-         self.e_lfarlc = datatypes.WORD(0) #: L{WORD} e_lfarlc.
-         self.e_ovno = datatypes.WORD(0) #: L{WORD} e_ovno.
+        self.e_magic = datatypes.WORD(consts.MZ_SIGNATURE)  #: L{WORD} e_magic.
+        self.e_cblp = datatypes.WORD(0)         #: L{WORD} e_cblp.
+        self.e_cp = datatypes.WORD(0)           #: L{WORD} e_cp.
+        self.e_crlc = datatypes.WORD(0)         #: L{WORD} e_crlc.
+        self.e_cparhdr = datatypes.WORD(0)      #: L{WORD} e_cparhdr.
+        self.e_minalloc = datatypes.WORD(0)     #: L{WORD} e_minalloc.
+        self.e_maxalloc = datatypes.WORD(0)     #: L{WORD} e_maxalloc.
+        self.e_ss = datatypes.WORD(0)           #: L{WORD} e_ss.
+        self.e_sp = datatypes.WORD(0)           #: L{WORD} e_sp.
+        self.e_csum = datatypes.WORD(0)         #: L{WORD} e_csum.
+        self.e_ip = datatypes.WORD(0)           #: L{WORD} e_ip.
+        self.e_cs = datatypes.WORD(0)           #: L{WORD} e_cs.
+        self.e_lfarlc = datatypes.WORD(0)       #: L{WORD} e_lfarlc.
+        self.e_ovno = datatypes.WORD(0)         #: L{WORD} e_ovno.
 
-         self.e_res = datatypes.Array(datatypes.TYPE_WORD) #: L{Array} of type L{WORD} e_res.
-         self.e_res.extend([datatypes.WORD(0), datatypes.WORD(0),  datatypes.WORD(0),  datatypes.WORD(0)])
+        self.e_res = datatypes.Array(datatypes.TYPE_WORD)  #: L{Array} of type L{WORD} e_res.
+        self.e_res.extend([datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0)])
 
-         self.e_oemid = datatypes.WORD(0) #: L{WORD} e_oemid.
-         self.e_oeminfo = datatypes.WORD(0) #: L{WORD} e_oeminfo.
+        self.e_oemid = datatypes.WORD(0)    #: L{WORD} e_oemid.
+        self.e_oeminfo = datatypes.WORD(0)  #: L{WORD} e_oeminfo.
 
-         self.e_res2 = datatypes.Array(datatypes.TYPE_WORD) #: L{Array} of type L{WORD} e_res2.
-         self.e_res2.extend([datatypes.WORD(0), datatypes.WORD(0),  datatypes.WORD(0),  datatypes.WORD(0),\
-                             datatypes.WORD(0), datatypes.WORD(0),  datatypes.WORD(0),  datatypes.WORD(0),\
-                             datatypes.WORD(0), datatypes.WORD(0)])
+        self.e_res2 = datatypes.Array(datatypes.TYPE_WORD)  #: L{Array} of type L{WORD} e_res2.
+        self.e_res2.extend([datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0),
+                            datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0), datatypes.WORD(0),
+                            datatypes.WORD(0), datatypes.WORD(0)])
 
-         self.e_lfanew = datatypes.DWORD(0xf0) #: L{DWORD} e_lfanew.
+        self.e_lfanew = datatypes.DWORD(0xf0)   #: L{DWORD} e_lfanew.
 
-         self._attrsList = ["e_magic","e_cblp","e_cp","e_crlc","e_cparhdr","e_minalloc","e_maxalloc","e_ss","e_sp","e_csum",\
-         "e_ip","e_cs","e_lfarlc","e_ovno","e_res","e_oemid","e_oeminfo","e_res2","e_lfanew"]
+        self._attrsList = ["e_magic", "e_cblp", "e_cp", "e_crlc", "e_cparhdr", "e_minalloc", "e_maxalloc", "e_ss", "e_sp", "e_csum",
+                           "e_ip", "e_cs", "e_lfarlc", "e_ovno", "e_res", "e_oemid", "e_oeminfo", "e_res2", "e_lfanew"]
 
     @staticmethod
     def parse(readDataInstance):
@@ -1626,30 +1633,30 @@ class DosHeader(baseclasses.BaseStructClass):
         """
         dosHdr = DosHeader()
 
-        dosHdr.e_magic.value  = readDataInstance.readWord()
-        dosHdr.e_cblp.value  = readDataInstance.readWord()
-        dosHdr.e_cp.value  = readDataInstance.readWord()
-        dosHdr.e_crlc.value  = readDataInstance.readWord()
-        dosHdr.e_cparhdr.value  = readDataInstance.readWord()
-        dosHdr.e_minalloc.value  = readDataInstance.readWord()
-        dosHdr.e_maxalloc.value  = readDataInstance.readWord()
-        dosHdr.e_ss.value  = readDataInstance.readWord()
-        dosHdr.e_sp.value  = readDataInstance.readWord()
-        dosHdr.e_csum.value  = readDataInstance.readWord()
-        dosHdr.e_ip.value  = readDataInstance.readWord()
-        dosHdr.e_cs.value  = readDataInstance.readWord()
-        dosHdr.e_lfarlc.value  = readDataInstance.readWord()
-        dosHdr.e_ovno.value  = readDataInstance.readWord()
+        dosHdr.e_magic.value = readDataInstance.readWord()
+        dosHdr.e_cblp.value = readDataInstance.readWord()
+        dosHdr.e_cp.value = readDataInstance.readWord()
+        dosHdr.e_crlc.value = readDataInstance.readWord()
+        dosHdr.e_cparhdr.value = readDataInstance.readWord()
+        dosHdr.e_minalloc.value = readDataInstance.readWord()
+        dosHdr.e_maxalloc.value = readDataInstance.readWord()
+        dosHdr.e_ss.value = readDataInstance.readWord()
+        dosHdr.e_sp.value = readDataInstance.readWord()
+        dosHdr.e_csum.value = readDataInstance.readWord()
+        dosHdr.e_ip.value = readDataInstance.readWord()
+        dosHdr.e_cs.value = readDataInstance.readWord()
+        dosHdr.e_lfarlc.value = readDataInstance.readWord()
+        dosHdr.e_ovno.value = readDataInstance.readWord()
 
         dosHdr.e_res = datatypes.Array(datatypes.TYPE_WORD)
         for i in xrange(4):
             dosHdr.e_res.append(datatypes.WORD(readDataInstance.readWord()))
 
-        dosHdr.e_oemid.value  = readDataInstance.readWord()
-        dosHdr.e_oeminfo.value  = readDataInstance.readWord()
+        dosHdr.e_oemid.value = readDataInstance.readWord()
+        dosHdr.e_oeminfo.value = readDataInstance.readWord()
 
         dosHdr.e_res2 = datatypes.Array(datatypes.TYPE_WORD)
-        for i in xrange (10):
+        for i in xrange(10):
             dosHdr.e_res2.append(datatypes.WORD(readDataInstance.readWord()))
 
         dosHdr.e_lfanew.value = readDataInstance.readDword()
@@ -1659,9 +1666,10 @@ class DosHeader(baseclasses.BaseStructClass):
         """Returns L{consts.IMAGE_DOS_HEADER}."""
         return consts.IMAGE_DOS_HEADER
 
+
 class NtHeaders(baseclasses.BaseStructClass):
     """NtHeaders object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_NT_HEADERS} structure.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680336%28v=vs.85%29.aspx}
@@ -1671,9 +1679,9 @@ class NtHeaders(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.signature = datatypes.DWORD(consts.PE_SIGNATURE) #: L{DWORD} signature.
-        self.fileHeader = FileHeader() #: L{FileHeader} fileHeader.
-        self.optionalHeader = OptionalHeader() #: L{OptionalHeader} optionalHeader.
+        self.signature = datatypes.DWORD(consts.PE_SIGNATURE)   #: L{DWORD} signature.
+        self.fileHeader = FileHeader()                          #: L{FileHeader} fileHeader.
+        self.optionalHeader = OptionalHeader()                  #: L{OptionalHeader} optionalHeader.
 
     def __str__(self):
         return str(self.signature) + str(self.fileHeader) + str(self.optionalHeader)
@@ -1699,9 +1707,10 @@ class NtHeaders(baseclasses.BaseStructClass):
         """Returns L{consts.IMAGE_NT_HEADERS}."""
         return consts.IMAGE_NT_HEADERS
 
+
 class FileHeader(baseclasses.BaseStructClass):
     """FileHeader object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_FILE_HEADER} structure.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680313%28v=vs.85%29.aspx}
@@ -1709,18 +1718,18 @@ class FileHeader(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to C{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack = True)
+        baseclasses.BaseStructClass.__init__(self, shouldPack=True)
 
-        self.machine = datatypes.WORD(consts.INTEL386) #: L{WORD} machine.
-        self.numberOfSections = datatypes.WORD(1) #: L{WORD} numberOfSections.
-        self.timeDateStamp = datatypes.DWORD(0) #: L{DWORD} timeDataStamp.
-        self.pointerToSymbolTable = datatypes.DWORD(0) #: L{DWORD} pointerToSymbolTable.
-        self.numberOfSymbols = datatypes.DWORD(0) #: L{DWORD} numberOfSymbols.
-        self.sizeOfOptionalHeader = datatypes.WORD(0xe0) #: L{WORD} sizeOfOptionalHeader.
-        self.characteristics = datatypes.WORD(consts.COMMON_CHARACTERISTICS) #: L{WORD} characteristics.
+        self.machine = datatypes.WORD(consts.INTEL386)      #: L{WORD} machine.
+        self.numberOfSections = datatypes.WORD(1)           #: L{WORD} numberOfSections.
+        self.timeDateStamp = datatypes.DWORD(0)             #: L{DWORD} timeDataStamp.
+        self.pointerToSymbolTable = datatypes.DWORD(0)      #: L{DWORD} pointerToSymbolTable.
+        self.numberOfSymbols = datatypes.DWORD(0)           #: L{DWORD} numberOfSymbols.
+        self.sizeOfOptionalHeader = datatypes.WORD(0xe0)    #: L{WORD} sizeOfOptionalHeader.
+        self.characteristics = datatypes.WORD(consts.COMMON_CHARACTERISTICS)  #: L{WORD} characteristics.
 
-        self._attrsList = ["machine","numberOfSections","timeDateStamp","pointerToSymbolTable","numberOfSymbols",\
-        "sizeOfOptionalHeader","characteristics"]
+        self._attrsList = ["machine", "numberOfSections", "timeDateStamp", "pointerToSymbolTable",
+                           "numberOfSymbols", "sizeOfOptionalHeader", "characteristics"]
 
     @staticmethod
     def parse(readDataInstance):
@@ -1734,12 +1743,12 @@ class FileHeader(baseclasses.BaseStructClass):
         @return: A new L{ReadData} object.
         """
         fh = FileHeader()
-        fh.machine.value  = readDataInstance.readWord()
-        fh.numberOfSections.value  = readDataInstance.readWord()
-        fh.timeDateStamp.value  = readDataInstance.readDword()
-        fh.pointerToSymbolTable.value  = readDataInstance.readDword()
-        fh.numberOfSymbols.value  = readDataInstance.readDword()
-        fh.sizeOfOptionalHeader.value  = readDataInstance.readWord()
+        fh.machine.value = readDataInstance.readWord()
+        fh.numberOfSections.value = readDataInstance.readWord()
+        fh.timeDateStamp.value = readDataInstance.readDword()
+        fh.pointerToSymbolTable.value = readDataInstance.readDword()
+        fh.numberOfSymbols.value = readDataInstance.readDword()
+        fh.sizeOfOptionalHeader.value = readDataInstance.readWord()
         fh.characteristics.value = readDataInstance.readWord()
         return fh
 
@@ -1747,9 +1756,10 @@ class FileHeader(baseclasses.BaseStructClass):
         """Returns L{consts.IMAGE_FILE_HEADER}."""
         return consts.IMAGE_FILE_HEADER
 
+
 class OptionalHeader(baseclasses.BaseStructClass):
     """OptionalHeader object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_OPTIONAL_HEADER} structure.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680339%28v=vs.85%29.aspx}
@@ -1759,44 +1769,46 @@ class OptionalHeader(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.magic = datatypes.WORD(consts.PE32) #: L{WORD} magic.
-        self.majorLinkerVersion = datatypes.BYTE(2) #: L{BYTE} majorLinkerVersion.
-        self.minorLinkerVersion = datatypes.BYTE(0x19) #: L{BYTE} minorLinkerVersion.
-        self.sizeOfCode = datatypes.DWORD(0x1000) #: L{DWORD} sizeOfCode.
-        self.sizeOfInitializedData = datatypes.DWORD(0) #: L{DWORD} sizeOfInitializedData.
-        self.sizeOfUninitializedData = datatypes.DWORD(0) #: L{DWORD} sizeOfUninitializedData.
-        self.addressOfEntryPoint = datatypes.DWORD(0x1000) #: L{DWORD} addressOfEntryPoint.
-        self.baseOfCode = datatypes.DWORD(0x1000) #: L{DWORD} baseOfCode.
-        self.baseOfData = datatypes.DWORD(0x1000) #: L{DWORD} baseOfData.
-        self.imageBase = datatypes.DWORD(0x400000) #: L{DWORD} imageBase.
-        self.sectionAlignment = datatypes.DWORD(0x1000) #: L{DWORD} sectionAlignment.
-        self.fileAlignment = datatypes.DWORD(0x200) #: L{DWORD} fileAligment.
-        self.majorOperatingSystemVersion = datatypes.WORD(5) #: L{WORD} majorOperatingSystemVersion.
-        self.minorOperatingSystemVersion = datatypes.WORD(0) #: L{WORD} minorOperatingSystemVersion.
-        self.majorImageVersion = datatypes.WORD(6) #: L{WORD} majorImageVersion.
-        self.minorImageVersion = datatypes.WORD(0) #: L{WORD} minorImageVersion.
-        self.majorSubsystemVersion = datatypes.WORD(5) #: L{WORD} majorSubsystemVersion.
-        self.minorSubsystemVersion = datatypes.WORD(0) #: L{WORD} minorSubsystemVersion.
-        self.win32VersionValue = datatypes.DWORD(0) #: L{DWORD} win32VersionValue.
-        self.sizeOfImage = datatypes.DWORD(0x2000) #: L{DWORD} sizeOfImage.
-        self.sizeOfHeaders = datatypes.DWORD(0x400) #: L{DWORD} sizeOfHeaders.
-        self.checksum = datatypes.DWORD(0) #: L{DWORD} checksum.
-        self.subsystem = datatypes.WORD(consts.WINDOWSGUI) #: L{WORD} subsystem.
-        self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE) #: L{WORD} dllCharacteristics.
-        self.sizeOfStackReserve = datatypes.DWORD(0x00100000) #: L{DWORD} sizeOfStackReserve.
-        self.sizeOfStackCommit = datatypes.DWORD(0x00004000) #: L{DWORD} sizeOfStackCommit.
-        self.sizeOfHeapReserve = datatypes.DWORD(00100000) #: L{DWORD} sizeOfHeapReserve.
-        self.sizeOfHeapCommit = datatypes.DWORD(0x1000) #: L{DWORD} sizeOfHeapCommit.
-        self.loaderFlags = datatypes.DWORD(0) #: L{DWORD} loaderFlags.
-        self.numberOfRvaAndSizes = datatypes.DWORD(0x10) #: L{DWORD} numberOfRvaAndSizes.
-        self.dataDirectory = datadirs.DataDirectory() #: L{DataDirectory} dataDirectory.
+        self.magic = datatypes.WORD(consts.PE32)                #: L{WORD} magic.
+        self.majorLinkerVersion = datatypes.BYTE(2)             #: L{BYTE} majorLinkerVersion.
+        self.minorLinkerVersion = datatypes.BYTE(0x19)          #: L{BYTE} minorLinkerVersion.
+        self.sizeOfCode = datatypes.DWORD(0x1000)               #: L{DWORD} sizeOfCode.
+        self.sizeOfInitializedData = datatypes.DWORD(0)         #: L{DWORD} sizeOfInitializedData.
+        self.sizeOfUninitializedData = datatypes.DWORD(0)       #: L{DWORD} sizeOfUninitializedData.
+        self.addressOfEntryPoint = datatypes.DWORD(0x1000)      #: L{DWORD} addressOfEntryPoint.
+        self.baseOfCode = datatypes.DWORD(0x1000)               #: L{DWORD} baseOfCode.
+        self.baseOfData = datatypes.DWORD(0x1000)               #: L{DWORD} baseOfData.
+        self.imageBase = datatypes.DWORD(0x400000)              #: L{DWORD} imageBase.
+        self.sectionAlignment = datatypes.DWORD(0x1000)         #: L{DWORD} sectionAlignment.
+        self.fileAlignment = datatypes.DWORD(0x200)             #: L{DWORD} fileAligment.
+        self.majorOperatingSystemVersion = datatypes.WORD(5)    #: L{WORD} majorOperatingSystemVersion.
+        self.minorOperatingSystemVersion = datatypes.WORD(0)    #: L{WORD} minorOperatingSystemVersion.
+        self.majorImageVersion = datatypes.WORD(6)              #: L{WORD} majorImageVersion.
+        self.minorImageVersion = datatypes.WORD(0)              #: L{WORD} minorImageVersion.
+        self.majorSubsystemVersion = datatypes.WORD(5)          #: L{WORD} majorSubsystemVersion.
+        self.minorSubsystemVersion = datatypes.WORD(0)          #: L{WORD} minorSubsystemVersion.
+        self.win32VersionValue = datatypes.DWORD(0)             #: L{DWORD} win32VersionValue.
+        self.sizeOfImage = datatypes.DWORD(0x2000)              #: L{DWORD} sizeOfImage.
+        self.sizeOfHeaders = datatypes.DWORD(0x400)             #: L{DWORD} sizeOfHeaders.
+        self.checksum = datatypes.DWORD(0)                      #: L{DWORD} checksum.
+        self.subsystem = datatypes.WORD(consts.WINDOWSGUI)      #: L{WORD} subsystem.
+        self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE)  #: L{WORD} dllCharacteristics.
+        self.sizeOfStackReserve = datatypes.DWORD(0x00100000)   #: L{DWORD} sizeOfStackReserve.
+        self.sizeOfStackCommit = datatypes.DWORD(0x00004000)    #: L{DWORD} sizeOfStackCommit.
+        self.sizeOfHeapReserve = datatypes.DWORD(00100000)      #: L{DWORD} sizeOfHeapReserve.
+        self.sizeOfHeapCommit = datatypes.DWORD(0x1000)         #: L{DWORD} sizeOfHeapCommit.
+        self.loaderFlags = datatypes.DWORD(0)                   #: L{DWORD} loaderFlags.
+        self.numberOfRvaAndSizes = datatypes.DWORD(0x10)        #: L{DWORD} numberOfRvaAndSizes.
+        self.dataDirectory = datadirs.DataDirectory()           #: L{DataDirectory} dataDirectory.
 
-        self._attrsList = ["magic","majorLinkerVersion","minorLinkerVersion","sizeOfCode","sizeOfInitializedData",\
-        "sizeOfUninitializedData","addressOfEntryPoint","baseOfCode","baseOfData","imageBase","sectionAlignment",\
-        "fileAlignment","majorOperatingSystemVersion","minorOperatingSystemVersion","majorImageVersion",\
-        "minorImageVersion","majorSubsystemVersion","minorSubsystemVersion","win32VersionValue","sizeOfImage",\
-        "sizeOfHeaders","checksum","subsystem","dllCharacteristics","sizeOfStackReserve","sizeOfStackCommit",\
-        "sizeOfHeapReserve","sizeOfHeapCommit","loaderFlags","numberOfRvaAndSizes","dataDirectory"]
+        self._attrsList = [
+            "magic", "majorLinkerVersion", "minorLinkerVersion", "sizeOfCode", "sizeOfInitializedData",
+            "sizeOfUninitializedData", "addressOfEntryPoint", "baseOfCode", "baseOfData", "imageBase", "sectionAlignment",
+            "fileAlignment", "majorOperatingSystemVersion", "minorOperatingSystemVersion", "majorImageVersion",
+            "minorImageVersion", "majorSubsystemVersion", "minorSubsystemVersion", "win32VersionValue", "sizeOfImage",
+            "sizeOfHeaders", "checksum", "subsystem", "dllCharacteristics", "sizeOfStackReserve", "sizeOfStackCommit",
+            "sizeOfHeapReserve", "sizeOfHeapCommit", "loaderFlags", "numberOfRvaAndSizes", "dataDirectory"
+        ]
 
     @staticmethod
     def parse(readDataInstance):
@@ -1811,36 +1823,36 @@ class OptionalHeader(baseclasses.BaseStructClass):
         """
         oh = OptionalHeader()
 
-        oh.magic.value  = readDataInstance.readWord()
-        oh.majorLinkerVersion.value  = readDataInstance.readByte()
-        oh.minorLinkerVersion.value  = readDataInstance.readByte()
-        oh.sizeOfCode.value  = readDataInstance.readDword()
-        oh.sizeOfInitializedData.value  = readDataInstance.readDword()
-        oh.sizeOfUninitializedData.value  = readDataInstance.readDword()
-        oh.addressOfEntryPoint.value  = readDataInstance.readDword()
-        oh.baseOfCode.value  = readDataInstance.readDword()
-        oh.baseOfData.value  = readDataInstance.readDword()
-        oh.imageBase.value  = readDataInstance.readDword()
-        oh.sectionAlignment.value  = readDataInstance.readDword()
-        oh.fileAlignment.value  = readDataInstance.readDword()
-        oh.majorOperatingSystemVersion.value  = readDataInstance.readWord()
-        oh.minorOperatingSystemVersion.value  = readDataInstance.readWord()
-        oh.majorImageVersion.value  = readDataInstance.readWord()
-        oh.minorImageVersion.value  = readDataInstance.readWord()
-        oh.majorSubsystemVersion.value  = readDataInstance.readWord()
-        oh.minorSubsystemVersion.value  = readDataInstance.readWord()
-        oh.win32VersionValue.value  = readDataInstance.readDword()
-        oh.sizeOfImage.value  = readDataInstance.readDword()
-        oh.sizeOfHeaders.value  = readDataInstance.readDword()
-        oh.checksum.value  = readDataInstance.readDword()
-        oh.subsystem.value  = readDataInstance.readWord()
-        oh.dllCharacteristics.value  = readDataInstance.readWord()
-        oh.sizeOfStackReserve.value  = readDataInstance.readDword()
-        oh.sizeOfStackCommit.value  = readDataInstance.readDword()
-        oh.sizeOfHeapReserve.value  = readDataInstance.readDword()
-        oh.sizeOfHeapCommit.value  = readDataInstance.readDword()
-        oh.loaderFlags.value  = readDataInstance.readDword()
-        oh.numberOfRvaAndSizes.value  = readDataInstance.readDword()
+        oh.magic.value = readDataInstance.readWord()
+        oh.majorLinkerVersion.value = readDataInstance.readByte()
+        oh.minorLinkerVersion.value = readDataInstance.readByte()
+        oh.sizeOfCode.value = readDataInstance.readDword()
+        oh.sizeOfInitializedData.value = readDataInstance.readDword()
+        oh.sizeOfUninitializedData.value = readDataInstance.readDword()
+        oh.addressOfEntryPoint.value = readDataInstance.readDword()
+        oh.baseOfCode.value = readDataInstance.readDword()
+        oh.baseOfData.value = readDataInstance.readDword()
+        oh.imageBase.value = readDataInstance.readDword()
+        oh.sectionAlignment.value = readDataInstance.readDword()
+        oh.fileAlignment.value = readDataInstance.readDword()
+        oh.majorOperatingSystemVersion.value = readDataInstance.readWord()
+        oh.minorOperatingSystemVersion.value = readDataInstance.readWord()
+        oh.majorImageVersion.value = readDataInstance.readWord()
+        oh.minorImageVersion.value = readDataInstance.readWord()
+        oh.majorSubsystemVersion.value = readDataInstance.readWord()
+        oh.minorSubsystemVersion.value = readDataInstance.readWord()
+        oh.win32VersionValue.value = readDataInstance.readDword()
+        oh.sizeOfImage.value = readDataInstance.readDword()
+        oh.sizeOfHeaders.value = readDataInstance.readDword()
+        oh.checksum.value = readDataInstance.readDword()
+        oh.subsystem.value = readDataInstance.readWord()
+        oh.dllCharacteristics.value = readDataInstance.readWord()
+        oh.sizeOfStackReserve.value = readDataInstance.readDword()
+        oh.sizeOfStackCommit.value = readDataInstance.readDword()
+        oh.sizeOfHeapReserve.value = readDataInstance.readDword()
+        oh.sizeOfHeapCommit.value = readDataInstance.readDword()
+        oh.loaderFlags.value = readDataInstance.readDword()
+        oh.numberOfRvaAndSizes.value = readDataInstance.readDword()
 
         dirs = readDataInstance.read(consts.IMAGE_NUMBEROF_DIRECTORY_ENTRIES * 8)
 
@@ -1851,6 +1863,7 @@ class OptionalHeader(baseclasses.BaseStructClass):
     def getType(self):
         """Returns L{consts.IMAGE_OPTIONAL_HEADER}."""
         return consts.IMAGE_OPTIONAL_HEADER
+
 
 # typedef struct _IMAGE_OPTIONAL_HEADER64 {
 # WORD        Magic;
@@ -1886,7 +1899,7 @@ class OptionalHeader(baseclasses.BaseStructClass):
 # } IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
 class OptionalHeader64(baseclasses.BaseStructClass):
     """OptionalHeader64 object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_OPTIONAL_HEADER64} structure.
         @see: Remarks in U{http://msdn.microsoft.com/en-us/library/windows/desktop/ms680339%28v=vs.85%29.aspx}
@@ -1896,43 +1909,45 @@ class OptionalHeader64(baseclasses.BaseStructClass):
         """
         baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.magic = datatypes.WORD(consts.PE32) #: L{WORD} magic.
-        self.majorLinkerVersion = datatypes.BYTE(2) #: L{BYTE} majorLinkerVersion.
-        self.minorLinkerVersion = datatypes.BYTE(0x19) #: L{BYTE} minorLinkerVersion.
-        self.sizeOfCode = datatypes.DWORD(0x1000) #: L{DWORD} sizeOfCode.
-        self.sizeOfInitializedData = datatypes.DWORD(0) #: L{DWORD} sizeOfInitializedData.
-        self.sizeOfUninitializedData = datatypes.DWORD(0) #: L{DWORD} sizeOfUninitializedData.
-        self.addressOfEntryPoint = datatypes.DWORD(0x1000) #: L{DWORD} addressOfEntryPoint.
-        self.baseOfCode = datatypes.DWORD(0x1000) #: L{DWORD} baseOfCode.
-        self.imageBase = datatypes.QWORD(0x400000) #: L{QWORD} imageBase.
-        self.sectionAlignment = datatypes.DWORD(0x1000) #: L{DWORD} sectionAlignment.
-        self.fileAlignment = datatypes.DWORD(0x200) #: L{DWORD} fileAligment.
-        self.majorOperatingSystemVersion = datatypes.WORD(5) #: L{WORD} majorOperatingSystemVersion.
-        self.minorOperatingSystemVersion = datatypes.WORD(0) #: L{WORD} minorOperatingSystemVersion.
-        self.majorImageVersion = datatypes.WORD(6) #: L{WORD} majorImageVersion.
-        self.minorImageVersion = datatypes.WORD(0) #: L{WORD} minorImageVersion.
-        self.majorSubsystemVersion = datatypes.WORD(5) #: L{WORD} majorSubsystemVersion.
-        self.minorSubsystemVersion = datatypes.WORD(0) #: L{WORD} minorSubsystemVersion.
-        self.win32VersionValue = datatypes.DWORD(0) #: L{DWORD} win32VersionValue.
-        self.sizeOfImage = datatypes.DWORD(0x2000) #: L{DWORD} sizeOfImage.
-        self.sizeOfHeaders = datatypes.DWORD(0x400) #: L{DWORD} sizeOfHeaders.
-        self.checksum = datatypes.DWORD(0) #: L{DWORD} checksum.
-        self.subsystem = datatypes.WORD(consts.WINDOWSGUI) #: L{WORD} subsystem.
-        self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE) #: L{WORD} dllCharacteristics.
-        self.sizeOfStackReserve = datatypes.QWORD(0x00100000) #: L{QWORD} sizeOfStackReserve.
-        self.sizeOfStackCommit = datatypes.QWORD(0x00004000) #: L{QWORD} sizeOfStackCommit.
-        self.sizeOfHeapReserve = datatypes.QWORD(00100000) #: L{QWORD} sizeOfHeapReserve.
-        self.sizeOfHeapCommit = datatypes.QWORD(0x1000) #: L{QWORD} sizeOfHeapCommit.
-        self.loaderFlags = datatypes.DWORD(0) #: L{DWORD}  loaderFlags.
-        self.numberOfRvaAndSizes = datatypes.DWORD(0x10) #: L{DWORD} numberOfRvaAndSizes.
-        self.dataDirectory = datadirs.DataDirectory() #: L{DataDirectory} dataDirectory.
+        self.magic = datatypes.WORD(consts.PE32)                #: L{WORD} magic.
+        self.majorLinkerVersion = datatypes.BYTE(2)             #: L{BYTE} majorLinkerVersion.
+        self.minorLinkerVersion = datatypes.BYTE(0x19)          #: L{BYTE} minorLinkerVersion.
+        self.sizeOfCode = datatypes.DWORD(0x1000)               #: L{DWORD} sizeOfCode.
+        self.sizeOfInitializedData = datatypes.DWORD(0)         #: L{DWORD} sizeOfInitializedData.
+        self.sizeOfUninitializedData = datatypes.DWORD(0)       #: L{DWORD} sizeOfUninitializedData.
+        self.addressOfEntryPoint = datatypes.DWORD(0x1000)      #: L{DWORD} addressOfEntryPoint.
+        self.baseOfCode = datatypes.DWORD(0x1000)               #: L{DWORD} baseOfCode.
+        self.imageBase = datatypes.QWORD(0x400000)              #: L{QWORD} imageBase.
+        self.sectionAlignment = datatypes.DWORD(0x1000)         #: L{DWORD} sectionAlignment.
+        self.fileAlignment = datatypes.DWORD(0x200)             #: L{DWORD} fileAligment.
+        self.majorOperatingSystemVersion = datatypes.WORD(5)    #: L{WORD} majorOperatingSystemVersion.
+        self.minorOperatingSystemVersion = datatypes.WORD(0)    #: L{WORD} minorOperatingSystemVersion.
+        self.majorImageVersion = datatypes.WORD(6)              #: L{WORD} majorImageVersion.
+        self.minorImageVersion = datatypes.WORD(0)              #: L{WORD} minorImageVersion.
+        self.majorSubsystemVersion = datatypes.WORD(5)          #: L{WORD} majorSubsystemVersion.
+        self.minorSubsystemVersion = datatypes.WORD(0)          #: L{WORD} minorSubsystemVersion.
+        self.win32VersionValue = datatypes.DWORD(0)             #: L{DWORD} win32VersionValue.
+        self.sizeOfImage = datatypes.DWORD(0x2000)              #: L{DWORD} sizeOfImage.
+        self.sizeOfHeaders = datatypes.DWORD(0x400)             #: L{DWORD} sizeOfHeaders.
+        self.checksum = datatypes.DWORD(0)                      #: L{DWORD} checksum.
+        self.subsystem = datatypes.WORD(consts.WINDOWSGUI)      #: L{WORD} subsystem.
+        self.dllCharacteristics = datatypes.WORD(consts.TERMINAL_SERVER_AWARE)  #: L{WORD} dllCharacteristics.
+        self.sizeOfStackReserve = datatypes.QWORD(0x00100000)   #: L{QWORD} sizeOfStackReserve.
+        self.sizeOfStackCommit = datatypes.QWORD(0x00004000)    #: L{QWORD} sizeOfStackCommit.
+        self.sizeOfHeapReserve = datatypes.QWORD(0x0100000)     #: L{QWORD} sizeOfHeapReserve.
+        self.sizeOfHeapCommit = datatypes.QWORD(0x1000)         #: L{QWORD} sizeOfHeapCommit.
+        self.loaderFlags = datatypes.DWORD(0)                   #: L{DWORD}  loaderFlags.
+        self.numberOfRvaAndSizes = datatypes.DWORD(0x10)        #: L{DWORD} numberOfRvaAndSizes.
+        self.dataDirectory = datadirs.DataDirectory()           #: L{DataDirectory} dataDirectory.
 
-        self._attrsList = ["magic","majorLinkerVersion","minorLinkerVersion","sizeOfCode","sizeOfInitializedData",\
-        "sizeOfUninitializedData","addressOfEntryPoint","baseOfCode", "imageBase","sectionAlignment",\
-        "fileAlignment","majorOperatingSystemVersion","minorOperatingSystemVersion","majorImageVersion",\
-        "minorImageVersion","majorSubsystemVersion","minorSubsystemVersion","win32VersionValue","sizeOfImage",\
-        "sizeOfHeaders","checksum","subsystem","dllCharacteristics","sizeOfStackReserve","sizeOfStackCommit",\
-        "sizeOfHeapReserve","sizeOfHeapCommit","loaderFlags","numberOfRvaAndSizes","dataDirectory"]
+        self._attrsList = [
+            "magic", "majorLinkerVersion", "minorLinkerVersion", "sizeOfCode", "sizeOfInitializedData",
+            "sizeOfUninitializedData", "addressOfEntryPoint", "baseOfCode", "imageBase", "sectionAlignment",
+            "fileAlignment", "majorOperatingSystemVersion", "minorOperatingSystemVersion", "majorImageVersion",
+            "minorImageVersion", "majorSubsystemVersion", "minorSubsystemVersion", "win32VersionValue", "sizeOfImage",
+            "sizeOfHeaders", "checksum", "subsystem", "dllCharacteristics", "sizeOfStackReserve", "sizeOfStackCommit",
+            "sizeOfHeapReserve", "sizeOfHeapCommit", "loaderFlags", "numberOfRvaAndSizes", "dataDirectory"
+        ]
 
     @staticmethod
     def parse(readDataInstance):
@@ -1947,35 +1962,35 @@ class OptionalHeader64(baseclasses.BaseStructClass):
         """
         oh = OptionalHeader64()
 
-        oh.magic.value  = readDataInstance.readWord()
-        oh.majorLinkerVersion.value  = readDataInstance.readByte()
-        oh.minorLinkerVersion.value  = readDataInstance.readByte()
-        oh.sizeOfCode.value  = readDataInstance.readDword()
-        oh.sizeOfInitializedData.value  = readDataInstance.readDword()
-        oh.sizeOfUninitializedData.value  = readDataInstance.readDword()
-        oh.addressOfEntryPoint.value  = readDataInstance.readDword()
-        oh.baseOfCode.value  = readDataInstance.readDword()
-        oh.imageBase.value  = readDataInstance.readQword()
-        oh.sectionAlignment.value  = readDataInstance.readDword()
-        oh.fileAlignment.value  = readDataInstance.readDword()
-        oh.majorOperatingSystemVersion.value  = readDataInstance.readWord()
-        oh.minorOperatingSystemVersion.value  = readDataInstance.readWord()
-        oh.majorImageVersion.value  = readDataInstance.readWord()
-        oh.minorImageVersion.value  = readDataInstance.readWord()
-        oh.majorSubsystemVersion.value  = readDataInstance.readWord()
-        oh.minorSubsystemVersion.value  = readDataInstance.readWord()
-        oh.win32VersionValue.value  = readDataInstance.readDword()
-        oh.sizeOfImage.value  = readDataInstance.readDword()
-        oh.sizeOfHeaders.value  = readDataInstance.readDword()
-        oh.checksum.value  = readDataInstance.readDword()
-        oh.subsystem.value  = readDataInstance.readWord()
-        oh.dllCharacteristics.value  = readDataInstance.readWord()
-        oh.sizeOfStackReserve.value  = readDataInstance.readQword()
-        oh.sizeOfStackCommit.value  = readDataInstance.readQword()
-        oh.sizeOfHeapReserve.value  = readDataInstance.readQword()
-        oh.sizeOfHeapCommit.value  = readDataInstance.readQword()
-        oh.loaderFlags.value  = readDataInstance.readDword()
-        oh.numberOfRvaAndSizes.value  = readDataInstance.readDword()
+        oh.magic.value = readDataInstance.readWord()
+        oh.majorLinkerVersion.value = readDataInstance.readByte()
+        oh.minorLinkerVersion.value = readDataInstance.readByte()
+        oh.sizeOfCode.value = readDataInstance.readDword()
+        oh.sizeOfInitializedData.value = readDataInstance.readDword()
+        oh.sizeOfUninitializedData.value = readDataInstance.readDword()
+        oh.addressOfEntryPoint.value = readDataInstance.readDword()
+        oh.baseOfCode.value = readDataInstance.readDword()
+        oh.imageBase.value = readDataInstance.readQword()
+        oh.sectionAlignment.value = readDataInstance.readDword()
+        oh.fileAlignment.value = readDataInstance.readDword()
+        oh.majorOperatingSystemVersion.value = readDataInstance.readWord()
+        oh.minorOperatingSystemVersion.value = readDataInstance.readWord()
+        oh.majorImageVersion.value = readDataInstance.readWord()
+        oh.minorImageVersion.value = readDataInstance.readWord()
+        oh.majorSubsystemVersion.value = readDataInstance.readWord()
+        oh.minorSubsystemVersion.value = readDataInstance.readWord()
+        oh.win32VersionValue.value = readDataInstance.readDword()
+        oh.sizeOfImage.value = readDataInstance.readDword()
+        oh.sizeOfHeaders.value = readDataInstance.readDword()
+        oh.checksum.value = readDataInstance.readDword()
+        oh.subsystem.value = readDataInstance.readWord()
+        oh.dllCharacteristics.value = readDataInstance.readWord()
+        oh.sizeOfStackReserve.value = readDataInstance.readQword()
+        oh.sizeOfStackCommit.value = readDataInstance.readQword()
+        oh.sizeOfHeapReserve.value = readDataInstance.readQword()
+        oh.sizeOfHeapCommit.value = readDataInstance.readQword()
+        oh.loaderFlags.value = readDataInstance.readDword()
+        oh.numberOfRvaAndSizes.value = readDataInstance.readDword()
 
         dirs = readDataInstance.read(consts.IMAGE_NUMBEROF_DIRECTORY_ENTRIES * 8)
 
@@ -1987,9 +2002,10 @@ class OptionalHeader64(baseclasses.BaseStructClass):
         """Returns L{consts.IMAGE_OPTIONAL_HEADER64}."""
         return consts.IMAGE_OPTIONAL_HEADER64
 
+
 class SectionHeader(baseclasses.BaseStructClass):
     """SectionHeader object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_SECTION_HEADER} structure.
         @see: U{http://msdn.microsoft.com/en-us/library/windows/desktop/ms680341%28v=vs.85%29.aspx}
@@ -1997,21 +2013,21 @@ class SectionHeader(baseclasses.BaseStructClass):
         @type shouldPack: bool
         @param shouldPack: (Optional) If set to C{True}, the object will be packed. If set to C{False}, the object won't be packed.
         """
-        baseclasses.BaseStructClass.__init__(self,  shouldPack)
+        baseclasses.BaseStructClass.__init__(self, shouldPack)
 
-        self.name = datatypes.String('.travest') #: L{String} name.
-        self.misc = datatypes.DWORD(0x1000) #: L{DWORD} misc.
-        self.virtualAddress = datatypes.DWORD(0x1000) #: L{DWORD} virtualAddress.
-        self.sizeOfRawData = datatypes.DWORD(0x200) #: L{DWORD} sizeOfRawData.
-        self.pointerToRawData = datatypes.DWORD(0x400) #: L{DWORD} pointerToRawData.
-        self.pointerToRelocations = datatypes.DWORD(0) #: L{DWORD} pointerToRelocations.
-        self.pointerToLineNumbers = datatypes.DWORD(0) #: L{DWORD} pointerToLineNumbers.
-        self.numberOfRelocations = datatypes.WORD(0) #: L{WORD} numberOfRelocations.
-        self.numberOfLinesNumbers = datatypes.WORD(0) #: L{WORD} numberOfLinesNumbers.
-        self.characteristics = datatypes.DWORD(0x60000000) #: L{DWORD} characteristics.
+        self.name = datatypes.String('.travest')        #: L{String} name.
+        self.misc = datatypes.DWORD(0x1000)             #: L{DWORD} misc.
+        self.virtualAddress = datatypes.DWORD(0x1000)   #: L{DWORD} virtualAddress.
+        self.sizeOfRawData = datatypes.DWORD(0x200)     #: L{DWORD} sizeOfRawData.
+        self.pointerToRawData = datatypes.DWORD(0x400)  #: L{DWORD} pointerToRawData.
+        self.pointerToRelocations = datatypes.DWORD(0)  #: L{DWORD} pointerToRelocations.
+        self.pointerToLineNumbers = datatypes.DWORD(0)  #: L{DWORD} pointerToLineNumbers.
+        self.numberOfRelocations = datatypes.WORD(0)    #: L{WORD} numberOfRelocations.
+        self.numberOfLinesNumbers = datatypes.WORD(0)   #: L{WORD} numberOfLinesNumbers.
+        self.characteristics = datatypes.DWORD(0x60000000)  #: L{DWORD} characteristics.
 
-        self._attrsList = ["name","misc","virtualAddress","sizeOfRawData","pointerToRawData","pointerToRelocations",\
-        "pointerToLineNumbers","numberOfRelocations","numberOfLinesNumbers","characteristics"]
+        self._attrsList = ["name", "misc", "virtualAddress", "sizeOfRawData", "pointerToRawData", "pointerToRelocations",
+                           "pointerToLineNumbers", "numberOfRelocations", "numberOfLinesNumbers", "characteristics"]
 
     @staticmethod
     def parse(readDataInstance):
@@ -2026,24 +2042,25 @@ class SectionHeader(baseclasses.BaseStructClass):
         """
         sh = SectionHeader()
         sh.name.value = readDataInstance.read(8)
-        sh.misc.value  = readDataInstance.readDword()
-        sh.virtualAddress.value  = readDataInstance.readDword()
-        sh.sizeOfRawData.value  = readDataInstance.readDword()
-        sh.pointerToRawData.value  = readDataInstance.readDword()
-        sh.pointerToRelocations.value  = readDataInstance.readDword()
-        sh.pointerToLineNumbers.value  = readDataInstance.readDword()
-        sh.numberOfRelocations.value  = readDataInstance.readWord()
-        sh.numberOfLinesNumbers.value  = readDataInstance.readWord()
-        sh.characteristics.value  = readDataInstance.readDword()
+        sh.misc.value = readDataInstance.readDword()
+        sh.virtualAddress.value = readDataInstance.readDword()
+        sh.sizeOfRawData.value = readDataInstance.readDword()
+        sh.pointerToRawData.value = readDataInstance.readDword()
+        sh.pointerToRelocations.value = readDataInstance.readDword()
+        sh.pointerToLineNumbers.value = readDataInstance.readDword()
+        sh.numberOfRelocations.value = readDataInstance.readWord()
+        sh.numberOfLinesNumbers.value = readDataInstance.readWord()
+        sh.characteristics.value = readDataInstance.readDword()
         return sh
 
     def getType(self):
         """Returns L{consts.IMAGE_SECTION_HEADER}."""
         return consts.IMAGE_SECTION_HEADER
 
+
 class SectionHeaders(list):
     """SectionHeaders object."""
-    def __init__(self, numberOfSectionHeaders = 1,  shouldPack = True):
+    def __init__(self, numberOfSectionHeaders=1, shouldPack=True):
         """
         Array of L{SectionHeader} objects.
 
@@ -2066,7 +2083,7 @@ class SectionHeaders(list):
         return "".join([str(x) for x in self if x.shouldPack])
 
     @staticmethod
-    def parse(readDataInstance,  numberOfSectionHeaders):
+    def parse(readDataInstance, numberOfSectionHeaders):
         """
         Returns a new L{SectionHeaders} object.
 
@@ -2076,7 +2093,7 @@ class SectionHeaders(list):
         @type numberOfSectionHeaders: int
         @param numberOfSectionHeaders: The number of L{SectionHeader} objects in the L{SectionHeaders} instance.
         """
-        sHdrs = SectionHeaders(numberOfSectionHeaders = 0)
+        sHdrs = SectionHeaders(numberOfSectionHeaders=0)
 
         for i in xrange(numberOfSectionHeaders):
             sh = SectionHeader()
@@ -2096,9 +2113,10 @@ class SectionHeaders(list):
 
         return sHdrs
 
+
 class Sections(list):
     """Sections object."""
-    def __init__(self,  sectionHeadersInstance = None):
+    def __init__(self, sectionHeadersInstance=None):
         """
         Array with the data of each section present in the file.
 
@@ -2115,7 +2133,7 @@ class Sections(list):
         return "".join([str(data) for data in self])
 
     @staticmethod
-    def parse(readDataInstance,  sectionHeadersInstance):
+    def parse(readDataInstance, sectionHeadersInstance):
         """
         Returns a new L{Sections} object.
 
@@ -2133,16 +2151,16 @@ class Sections(list):
         for sectionHdr in sectionHeadersInstance:
 
             if sectionHdr.sizeOfRawData.value > len(readDataInstance.data):
-                print "Warning: SizeOfRawData is larger than file."
+                print("Warning: SizeOfRawData is larger than file.")
 
             if sectionHdr.pointerToRawData.value > len(readDataInstance.data):
-                print "Warning: PointerToRawData points beyond the end of the file."
+                print("Warning: PointerToRawData points beyond the end of the file.")
 
             if sectionHdr.misc.value > 0x10000000:
-                print "Warning: VirtualSize is extremely large > 256MiB."
+                print("Warning: VirtualSize is extremely large > 256MiB.")
 
             if sectionHdr.virtualAddress.value > 0x10000000:
-                print "Warning: VirtualAddress is beyond 0x10000000"
+                print("Warning: VirtualAddress is beyond 0x10000000")
 
             # skip sections with pointerToRawData == 0. According to PECOFF, it contains uninitialized data
             if sectionHdr.pointerToRawData.value:

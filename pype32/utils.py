@@ -298,7 +298,7 @@ class ReadData(object):
         """
         if nroBytes > self.length - self.offset:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes, self.length - self.offset)
+                print("Warning: Trying to read: %d bytes - only %d bytes left" % (nroBytes, self.length - self.offset))
             nroBytes = self.length - self.offset
 
         resultStr = self.data[self.offset:self.offset + nroBytes]
@@ -342,7 +342,7 @@ class ReadData(object):
         """
         if offset > self.length:
             if self.log:
-                print "Warning: Trying to read: %d bytes - only %d bytes left" % (size, self.length - self.offset)
+                print("Warning: Trying to read: %d bytes - only %d bytes left" % (size, self.length - self.offset))
             offset = self.length - self.offset
         tmpOff = self.tell()
         self.setOffset(offset)
@@ -368,9 +368,9 @@ class ReadData(object):
             if not isinstance(field, dict):
                 raise Exception("Invalid field definition '{0}'.".format(type(field).__name__))
             for k, v in field.iteritems():
-                # print type(v).__name__
+                # print(type(v).__name__)
                 parsed = v.parse(self)
-                result.update({k: parsed.value})
+                result[k] = parsed.value
                 break  # only process the first
         return result
 

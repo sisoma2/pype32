@@ -1193,7 +1193,8 @@ class NetMetaDataStreams(dict):
             streamEntry.name.value = readDataInstance.readAlignedString()
 
             # streams.append(streamEntry)
-            streams.update({i: streamEntry, streamEntry.name.value: streamEntry})
+            streams[i] = streamEntry
+            streams[streamEntry.name.value] = streamEntry
 
         return streams
 

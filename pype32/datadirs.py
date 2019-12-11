@@ -35,24 +35,25 @@ Data directory classes.
 __revision__ = "$Id$"
 
 __all__ = [
-           "Directory",
-           "DataDirectory",
-           ]
+    "Directory",
+    "DataDirectory",
+]
 
 import consts
 import excep
 import datatypes
 
-from struct import pack
+dirs = [
+    "EXPORT_DIRECTORY", "IMPORT_DIRECTORY", "RESOURCE_DIRECTORY", "EXCEPTION_DIRECTORY", "SECURITY_DIRECTORY",
+    "RELOCATION_DIRECTORY", "DEBUG_DIRECTORY", "ARCHITECTURE_DIRECTORY", "RESERVED_DIRECTORY", "TLS_DIRECTORY",
+    "CONFIGURATION_DIRECTORY", "BOUND_IMPORT_DIRECTORY", "IAT_DIRECTORY", "DELAY_IMPORT_DIRECTORY",
+    "NET_METADATA_DIRECTORY", "RESERVED_DIRECTORY"
+]
 
-dirs = ["EXPORT_DIRECTORY","IMPORT_DIRECTORY","RESOURCE_DIRECTORY","EXCEPTION_DIRECTORY","SECURITY_DIRECTORY",\
-"RELOCATION_DIRECTORY","DEBUG_DIRECTORY","ARCHITECTURE_DIRECTORY","RESERVED_DIRECTORY","TLS_DIRECTORY",\
-"CONFIGURATION_DIRECTORY","BOUND_IMPORT_DIRECTORY","IAT_DIRECTORY","DELAY_IMPORT_DIRECTORY","NET_METADATA_DIRECTORY",\
-"RESERVED_DIRECTORY"]
 
 class Directory(object):
     """Directory object."""
-    def __init__(self, shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Class representation of the C{IMAGE_DATA_DIRECTORY} structure.
         @see: U{http://msdn.microsoft.com/es-es/library/windows/desktop/ms680305%28v=vs.85%29.aspx}
@@ -61,9 +62,9 @@ class Directory(object):
         @param shouldPack: If set to C{True} the L{Directory} object will be packed. If set to C{False} the object won't be packed.
         """
         self.name = datatypes.String("")
-        self.rva = datatypes.DWORD(0) #: L{DWORD} rva.
-        self.size = datatypes.DWORD(0) #: L{DWORD} size.
-        self.info = None #: This variable holds the information of the directory.
+        self.rva = datatypes.DWORD(0)   #: L{DWORD} rva.
+        self.size = datatypes.DWORD(0)  #: L{DWORD} size.
+        self.info = None  #: This variable holds the information of the directory.
         self.shouldPack = shouldPack
 
     def __str__(self):
@@ -95,9 +96,10 @@ class Directory(object):
         """Returns a value that identifies the L{Directory} object."""
         return consts.IMAGE_DATA_DIRECTORY
 
+
 class DataDirectory(list):
     """DataDirectory object."""
-    def __init__(self,  shouldPack = True):
+    def __init__(self, shouldPack=True):
         """
         Array of L{Directory} objects.
 

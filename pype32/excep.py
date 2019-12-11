@@ -47,44 +47,50 @@ Exceptions used by the entire library.
 __revision__ = "$Id$"
 
 __all__ = [
-           "PyPe32Exception",
-            "PyPe32Warning",
-            "PEWarning",
-            "PEException",
-            "NotValidPathException",
-            "WrongOffsetValueException",
-            "DirectoryEntriesLengthException",
-            "TypeNotSupportedException",
-            "ArrayTypeException",
-            "DataLengthException",
-            "ReadDataOffsetException",
-            "WriteDataOffsetException",
-            "InstanceErrorException",
-            "DataMismatchException",
-            "SectionHeadersException",
-            "DirectoryEntryException",
-            "InvalidParameterException",
-           ]
+    "PyPe32Exception",
+    "PyPe32Warning",
+    "PEWarning",
+    "PEException",
+    "NotValidPathException",
+    "WrongOffsetValueException",
+    "DirectoryEntriesLengthException",
+    "TypeNotSupportedException",
+    "ArrayTypeException",
+    "DataLengthException",
+    "ReadDataOffsetException",
+    "WriteDataOffsetException",
+    "InstanceErrorException",
+    "DataMismatchException",
+    "SectionHeadersException",
+    "DirectoryEntryException",
+    "InvalidParameterException",
+]
+
 
 class PyPe32Exception(Exception):
     """Base exception class."""
     pass
 
+
 class PyPe32Warning(Exception):
     """Base warning class."""
     pass
+
 
 class PEWarning(PyPe32Warning):
     """Raised when a suspicious value is found into the PE instance."""
     pass
 
+
 class PEException(PyPe32Exception):
     """Raised when an invalid field on the PE instance was found."""
     pass
 
+
 class NotValidPathException(PyPe32Exception):
     """Raised when a path wasn't found or it is an invalid path."""
     pass
+
 
 class WrongOffsetValueException(PyPe32Exception):
     """
@@ -93,45 +99,56 @@ class WrongOffsetValueException(PyPe32Exception):
     """
     pass
 
+
 class DirectoryEntriesLengthException(PyPe32Exception):
     """Raised when the the number of entries in a L{DataDirectory} object is different from L{consts.IMAGE_NUMBEROF_DIRECTORY_ENTRIES}."""
     pass
+
 
 class TypeNotSupportedException(PyPe32Exception):
     """This exception must be used when an invalid data type is used within the library."""
     pass
 
+
 class ArrayTypeException(PyPe32Exception):
     """Raised when creating an unsupported type of array."""
     pass
+
 
 class DataLengthException(PyPe32Exception):
     """Raised when data lengths does not match."""
     pass
 
+
 class ReadDataOffsetException(PyPe32Exception):
     """This exception must be raised when reading from an invalid offset."""
     pass
+
 
 class WriteDataOffsetException(PyPe32Exception):
     """This exception must be raised when writing to an invalid offset."""
     pass
 
+
 class InstanceErrorException(PyPe32Exception):
     """This exception is raised when an instance parameter was not specified."""
     pass
+
 
 class DataMismatchException(PyPe32Exception):
     """Raised when two different types of data does not match."""
     pass
 
+
 class SectionHeadersException(PyPe32Exception):
     """Raised when an error related to a L{pype32.SectionHeader} or L{pype32.SectionHeaders} is found."""
     pass
 
+
 class DirectoryEntryException(PyPe32Exception):
     """This exception must be raised when an error with the L{Directory} is found."""
     pass
+
 
 class InvalidParameterException(PyPe32Exception):
     """Raised when an invalid parameter is received."""

@@ -43,16 +43,7 @@ class StringHeapIndex(object):
         self.value = None
 
     def getString(self, offset):
-        funcname = sys._getframe().f_code.co_name
-        cache = caching.getCache(funcname)
-        result = cache.get(offset)
-        if result is not None:
-            return result
-
-        for i in self.streams["#Strings"].info:
-            cache.put(*i.iteritems().next())
-
-        return cache.get(offset)
+        return self.streams["#Strings"].info.get(offset)
 
     def parse(self, readDataInstance):
         if self.dt.netMetaDataTableHeader.heapOffsetSizes.value & 0x1:
@@ -72,16 +63,7 @@ class GuidHeapIndex(object):
         self.value = None
 
     def getGuid(self, offset):
-        funcname = sys._getframe().f_code.co_name
-        cache = caching.getCache(funcname)
-        result = cache.get(offset)
-        if result is not None:
-            return result
-
-        for i in self.streams["#GUID"].info:
-            cache.put(*i.iteritems().next())
-
-        return cache.get(offset)
+        return self.streams["#GUID"].info.get(offset)
 
     def parse(self, readDataInstance):
         if self.dt.netMetaDataTableHeader.heapOffsetSizes.value & 0x2:
@@ -101,16 +83,7 @@ class BlobHeapIndex(object):
         self.value = None
 
     def getBlob(self, offset):
-        funcname = sys._getframe().f_code.co_name
-        cache = caching.getCache(funcname)
-        result = cache.get(offset)
-        if result is not None:
-            return result
-
-        for i in self.streams["#Blob"].info:
-            cache.put(*i.iteritems().next())
-
-        return cache.get(offset)
+        return self.streams["#Blob"].info.get(offset)
 
     def parse(self, readDataInstance):
         if self.dt.netMetaDataTableHeader.heapOffsetSizes.value & 0x4:

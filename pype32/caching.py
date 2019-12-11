@@ -30,6 +30,7 @@
 
 caches = {}
 
+
 class Cache(object):
 
     def __init__(self, name):
@@ -40,7 +41,8 @@ class Cache(object):
         return self.cache.get(key)
 
     def put(self, key, value):
-        self.cache.update({ key: value })
+        self.cache[key] = value
+
 
 def getCache(name):
     cache = caches.get(name)
@@ -48,6 +50,7 @@ def getCache(name):
         cache = Cache(name)
         caches[name] = cache
     return cache
+
 
 def cached(*ids):
     def decorator(func):
