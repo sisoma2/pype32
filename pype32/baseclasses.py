@@ -61,7 +61,7 @@ class BaseStructClass(object):
         return len(str(self))
 
     def __dir__(self):
-        return sorted(self._attrsList or self.__dict__.keys())
+        return sorted(self._attrsList)
 
     def sizeof(self):
         return len(self)
@@ -112,9 +112,6 @@ class DataTypeBaseClass(object):
         self.endianness = endianness
         self.signed = signed
         self.shouldPack = shouldPack
-
-    def __dir__(self):
-        return sorted(self.__dict__.keys())
 
     def __eq__(self, other):
         result = None
