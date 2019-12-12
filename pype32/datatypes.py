@@ -66,6 +66,9 @@ TYPE_STRING_HEAP_INDEX = 0x1000
 
 class String(object):
     """String object."""
+
+    __slots__ = ('value', 'shouldPack')
+
     def __init__(self, value="", shouldPack=True):
         """
         @type value: str
@@ -94,6 +97,9 @@ class String(object):
 
 class AlignedString(String):
     """Aligned string object."""
+
+    __slots__ = ('align',)
+
     def __init__(self, value, shouldPack=True, align=4):
         """
         This object represent an aligned ASCII string.
@@ -116,6 +122,9 @@ class AlignedString(String):
 
 class Array(list):
     """Array object."""
+
+    __slots__ = ('arrayType', 'shouldPack')
+
     def __init__(self, arrayType, shouldPack=True):
         """
         @type arrayType: int
@@ -206,6 +215,9 @@ class Array(list):
 
 class BYTE(DataTypeBaseClass):
     """Byte object."""
+
+    __slots__ = ()
+
     def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
@@ -243,6 +255,9 @@ class BYTE(DataTypeBaseClass):
 
 class WORD(DataTypeBaseClass):
     """Word object."""
+
+    __slots__ = ()
+
     def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
@@ -278,6 +293,9 @@ class WORD(DataTypeBaseClass):
 
 class DWORD(DataTypeBaseClass):
     """Dword object."""
+
+    __slots__ = ()
+
     def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
@@ -311,6 +329,9 @@ class DWORD(DataTypeBaseClass):
 
 class QWORD(DataTypeBaseClass):
     """Qword object."""
+
+    __slots__ = ()
+
     def __init__(self, value=0, endianness="<", signed=False, shouldPack=True):
         DataTypeBaseClass.__init__(self, value, endianness, signed, shouldPack)
 
