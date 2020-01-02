@@ -793,7 +793,7 @@ class PE(object):
         """
         d = self.getDataAtRva(rva, 1)
         resultStr = datatypes.String("")
-        while d != "\x00":
+        while d and d != b"\x00":
             resultStr.value += d
             rva += 1
             d = self.getDataAtRva(rva, 1)
